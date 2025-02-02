@@ -1,0 +1,203 @@
+package components
+
+import (
+	"fmt"
+	"github.com/inaryzen/prio_cards/consts"
+	"github.com/inaryzen/prio_cards/models"
+	"strconv"
+)
+
+templ CardTable(cards []models.Card, st models.Settings) {
+	<table id="cards-table">
+		<colgroup>
+			<col style="width: 5%;"/>
+			<col style="width: 30%;"/>
+			<col style="width: 5%;"/>
+			<col style="width: 10%;"/>
+			<col style="width: 10%;"/>
+			<col style="width: 10%;"/>
+			<col style="width: auto;"/>
+		</colgroup>
+		<thead>
+			<tr>
+				<th>Done</th>
+				<th>Title</th>
+				<th class="sortable-header">
+					<form
+						hx-post={consts.URL_TOGGLE_SORT_TABLE}
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					>
+						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Priority)) }/>
+						if st.ActiveSortColumn == models.Priority {
+							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.ActiveSortDirection)) }/>
+						}
+						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Priority, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Priority, models.Asc)) }>
+							Priority
+						</button>
+					</form>
+				</th>				
+				<th class="sortable-header">
+					<form
+						hx-post={consts.URL_TOGGLE_SORT_TABLE}
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					>
+						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Completed)) }/>
+						if st.ActiveSortColumn == models.Completed {
+							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.ActiveSortDirection)) }/>
+						}
+						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Completed, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Completed, models.Asc)) }>
+							Completed
+						</button>
+					</form>
+				</th>
+				<th class="sortable-header">
+					<form
+						hx-post={consts.URL_TOGGLE_SORT_TABLE}
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					>
+						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Created)) }/>
+						if st.ActiveSortColumn == models.Created {
+							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.ActiveSortDirection)) }/>
+						}
+						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Created, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Created, models.Asc)) }>
+							Created Date
+						</button>
+					</form>
+				</th>
+				<th>Updated</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, c := range cards {
+				<tr>
+					<td id="column-completed-status">
+						<input
+							if c.IsCompleted() {
+								checked
+							}
+							name="card-completed"
+							type="checkbox"
+							hx-trigger="change"
+							hx-post={ string(templ.URL(fmt.Sprintf("/cards/%s/toggle-completed", c.Id))) }
+						/>
+					</td>
+					<td id="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/card/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
+					<td id="column-priority">{ c.Priority.ToStr() }</td>
+					<td id="column-completed">
+						if c.IsCompleted() {
+							{ c.Completed.Format("2006-01-02 15:04:05") }
+						}
+					</td>
+					<td id="column-created">{ c.Created.Format("2006-01-02 15:04:05") }</td>
+					<td id="column-updated">{ c.Updated.Format("2006-01-02 15:04:05") }</td>
+					<td></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+templ CardsView(cards []models.Card, st models.Settings) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Cards</title>
+			<script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.js" integrity="sha384-BBDmZzVt6vjz5YbQqZPtFZW82o8QotoM7RUp5xOxV3nSJ8u2pSdtzFAbGKzTlKtg" crossorigin="anonymous"></script>
+			<script src="/assets/js/main.js"></script>
+			<link rel="stylesheet" href="/assets/css/main.css"/>
+		</head>
+		<body>
+			<div class="container">
+				<header>
+					<nav>
+						<ul>
+							<li><a hx-get="/view/new-card" hx-target="#modal-card" hx-swap="outerHTML" hx-trigger="click, keydown[ctrlKey&&shiftKey&&key=='N'] from:body">New</a></li>
+							<li><a href="/cards">List</a></li>
+							<li><a href="#completed">Completed</a></li>
+						</ul>
+					</nav>
+				</header>
+				<div class="filter-panel">
+					<label>
+						<input
+							if st.FilterCompleted {
+								checked
+							}
+							type="checkbox"
+							id={ consts.COMPLETED_FILTER_NAME }
+							name={ consts.COMPLETED_FILTER_NAME }
+							hx-trigger="change"
+							hx-post="/toggle-completed-filter"
+							hx-target="#cards-table"
+							hx-swap="innerHTML"
+						/>
+						Hide Completed
+					</label>
+				</div>
+				@CardTable(cards, st)
+			</div>
+			<div id="modal-card"></div>
+		</body>
+	</html>
+}
+
+templ ModalCardView(card models.Card) {
+	<div id="modal-card" class="modal" style="display: flex">
+		<div class="modal-content" id="modalContent">
+			<!-- Form Content -->
+			// <div class="modal-title">Edit Card</div>
+			@ModalCardForm(card) {
+				<input type="hidden" name="card-id" value={ card.Id }/>
+				<div class="modal-title-row">
+					<input type="text" id="card-title" name="card-title" class="modal-task-title" value={ card.Title } placeholder="Card title..."/>
+					<select id="modal-task-priority" name="modal-task-priority" class="modal-task-priority">
+						<option
+							value="2"
+							if card.Priority == models.PriorityHigh {
+								selected
+							}
+						>{ models.PriorityHigh.ToStr() }</option>
+						<option
+							value="1"
+							if card.Priority == models.PriorityMedium {
+								selected
+							}
+						>{ models.PriorityMedium.ToStr() }</option>
+						<option
+							value="0"
+							if card.Priority == models.PriorityLow {
+								selected
+							}
+						>{ models.PriorityLow.ToStr() }</option>
+					</select>
+				</div>
+				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
+				<div class="form-buttons">
+					<button type="submit" class="btn-save">Save</button>
+					<button type="button" class="btn-cancel" onclick="closeModal('modal-card')">Cancel</button>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ ModalCardForm(card models.Card) {
+	<form
+		if card == models.EMPTY_CARD {
+			hx-post="/cards"
+		} else {
+			hx-put="/cards"
+		}
+		hx-on:htmx:after-request="closeModal('modal-card')"
+		hx-target="#cards-table"
+		hx-swap="innerHTML"
+	>
+		{ children... }
+	</form>
+}
