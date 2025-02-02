@@ -1,4 +1,4 @@
-module github.com/inaryzen/prio_cards
+module github.com/inaryzen/priotasks
 
 go 1.23.2
 

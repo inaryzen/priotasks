@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/inaryzen/prio_cards/consts"
-	"github.com/inaryzen/prio_cards/services"
+	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/services"
 )
 
 func PostToggleCompletedFilter(w http.ResponseWriter, r *http.Request) {
@@ -22,5 +22,5 @@ func PostToggleCompletedFilter(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	drawCardTable(w, r)
+	drawTaskTable(w, r)
 }

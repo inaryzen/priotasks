@@ -9,20 +9,19 @@ import (
 
 	badger "github.com/dgraph-io/badger/v4"
 
-	"github.com/inaryzen/prio_cards/common"
-	"github.com/inaryzen/prio_cards/models"
+	"github.com/inaryzen/priotasks/common"
+	"github.com/inaryzen/priotasks/models"
 )
 
 var dbBadger *badger.DB
 var ErrNotFound = errors.New("not found")
 
 const (
-	PREFIX_CARD     = "card:"
+	PREFIX_TASK     = "card:"
 	PREFIX_SETTINGS = "settings:"
 )
 
 func DbInit() {
-	log.Printf("Opening Badger...")
 	dir, err := common.ResolveAppDir()
 	if err != nil {
 		log.Fatalf("Failed to get home directory: %v", err)
@@ -37,23 +36,21 @@ func DbInit() {
 }
 
 func DbClose() {
-	log.Printf("Closing Badger...")
 	dbBadger.Close()
 }
 
-func Cards() (result []models.Card, err error) {
+func Tasks() (result []models.Task, err error) {
 
-	result = []models.Card{}
+	result = []models.Task{}
 	err = nil
 
-	// return cards
 	err = dbBadger.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		opts.PrefetchSize = 10
 		it := txn.NewIterator(opts)
 		defer it.Close()
 
-		prefix := []byte(PREFIX_CARD)
+		prefix := []byte(PREFIX_TASK)
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
@@ -64,13 +61,13 @@ func Cards() (result []models.Card, err error) {
 				log.Fatalf("Error retrieving value: %v: %v", key, err)
 			}
 
-			var card models.Card
-			err = json.Unmarshal(valueCopy, &card)
+			var task models.Task
+			err = json.Unmarshal(valueCopy, &task)
 			if err != nil {
 				log.Fatalf("Error unmarshalling value: %v: %v", key, err)
 			}
 
-			result = append(result, card)
+			result = append(result, task)
 		}
 		return nil
 	})
@@ -81,13 +78,12 @@ func Cards() (result []models.Card, err error) {
 }
 
 // TODO: handle the case when Card is not found properly, see ErrKeyNotFound
-func FindCard(cardId string) (models.Card, error) {
-	var result models.Card
+func FindTask(taskId string) (models.Task, error) {
+	var result models.Task
 	var err error
 
-	// return cards
 	err = dbBadger.View(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte(PREFIX_CARD + cardId))
+		item, err := txn.Get([]byte(PREFIX_TASK + taskId))
 
 		errors.Is(err, badger.ErrKeyNotFound)
 		if err != nil {
@@ -107,19 +103,19 @@ func FindCard(cardId string) (models.Card, error) {
 		return nil
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to fetch records: %s: %w", cardId, err)
+		err = fmt.Errorf("failed to fetch records: %s: %w", taskId, err)
 	}
 	return result, err
 }
 
-func DeleteAllCards() error {
+func DeleteAllTasks() error {
 	err := dbBadger.Update(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		opts.PrefetchSize = 10
 		it := txn.NewIterator(opts)
 		defer it.Close()
 
-		prefix := []byte(PREFIX_CARD)
+		prefix := []byte(PREFIX_TASK)
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
@@ -138,19 +134,19 @@ func DeleteAllCards() error {
 	return nil
 }
 
-func SaveCard(card models.Card) error {
+func SaveTask(task models.Task) error {
 	var err error
 
-	jsonData, err := json.Marshal(card)
+	jsonData, err := json.Marshal(task)
 	if err != nil {
 		log.Fatalf("Error marshalling to JSON: %v", err)
 	}
 
 	err = dbBadger.Update(func(txn *badger.Txn) error {
-		err := txn.Set([]byte(PREFIX_CARD+card.Id), jsonData)
+		err := txn.Set([]byte(PREFIX_TASK+task.Id), jsonData)
 		return err
 	})
-	return logSavedEntity(card, err)
+	return logSavedEntity(task, err)
 }
 
 func FindSettings(settingsId string) (models.Settings, error) {

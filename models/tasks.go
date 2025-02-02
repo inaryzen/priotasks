@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var EMPTY_CARD = Card{
+var EMPTY_TASK = Task{
 	Priority: PriorityMedium,
 }
 
@@ -45,7 +45,7 @@ func (p TaskPriority) ToStr() string {
 	}
 }
 
-type Card struct {
+type Task struct {
 	Id        string
 	Title     string
 	Content   string
@@ -63,12 +63,12 @@ func titleFromContent(content string) string {
 	return content[:titleIdx]
 }
 
-func Create(prototype Card) Card {
+func Create(prototype Task) Task {
 	if prototype.Title == "" {
 		prototype.Title = titleFromContent(prototype.Content)
 	}
 
-	return Card{
+	return Task{
 		Id:        uuid.NewString(),
 		Title:     prototype.Title,
 		Content:   prototype.Content,
@@ -79,12 +79,12 @@ func Create(prototype Card) Card {
 	}
 }
 
-func (c Card) Update(change Card) Card {
+func (c Task) Update(change Task) Task {
 	if change.Title == "" {
 		change.Title = titleFromContent(change.Content)
 	}
 
-	return Card{
+	return Task{
 		Id:        c.Id,
 		Title:     change.Title,
 		Content:   change.Content,
@@ -95,17 +95,17 @@ func (c Card) Update(change Card) Card {
 	}
 }
 
-func (c Card) IsCompleted() bool {
+func (c Task) IsCompleted() bool {
 	return c.Completed != NOT_COMPLETED
 }
 
-func (c Card) Complete() Card {
+func (c Task) Complete() Task {
 	c.Completed = time.Now()
 	c.Updated = time.Now()
 	return c
 }
 
-func (c Card) Uncomplete() Card {
+func (c Task) Uncomplete() Task {
 	c.Completed = NOT_COMPLETED
 	c.Updated = time.Now()
 	return c

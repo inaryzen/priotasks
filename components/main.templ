@@ -2,12 +2,12 @@ package components
 
 import (
 	"fmt"
-	"github.com/inaryzen/prio_cards/consts"
-	"github.com/inaryzen/prio_cards/models"
+	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/models"
 	"strconv"
 )
 
-templ CardTable(cards []models.Card, st models.Settings) {
+templ TaskTable(cards []models.Task, st models.Settings) {
 	<table id="cards-table">
 		<colgroup>
 			<col style="width: 5%;"/>
@@ -82,10 +82,10 @@ templ CardTable(cards []models.Card, st models.Settings) {
 							name="card-completed"
 							type="checkbox"
 							hx-trigger="change"
-							hx-post={ string(templ.URL(fmt.Sprintf("/cards/%s/toggle-completed", c.Id))) }
+							hx-post={ string(templ.URL(fmt.Sprintf("/tasks/%s/toggle-completed", c.Id))) }
 						/>
 					</td>
-					<td id="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/card/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
+					<td id="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
 					<td id="column-priority">{ c.Priority.ToStr() }</td>
 					<td id="column-completed">
 						if c.IsCompleted() {
@@ -101,7 +101,7 @@ templ CardTable(cards []models.Card, st models.Settings) {
 	</table>
 }
 
-templ CardsView(cards []models.Card, st models.Settings) {
+templ TasksView(cards []models.Task, st models.Settings) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -117,8 +117,8 @@ templ CardsView(cards []models.Card, st models.Settings) {
 				<header>
 					<nav>
 						<ul>
-							<li><a hx-get="/view/new-card" hx-target="#modal-card" hx-swap="outerHTML" hx-trigger="click, keydown[ctrlKey&&shiftKey&&key=='N'] from:body">New</a></li>
-							<li><a href="/cards">List</a></li>
+							<li><a hx-get="/view/new-task" hx-target="#modal-card" hx-swap="outerHTML" hx-trigger="click, keydown[ctrlKey&&shiftKey&&key=='N'] from:body">New</a></li>
+							<li><a href="/tasks">List</a></li>
 							<li><a href="#completed">Completed</a></li>
 						</ul>
 					</nav>
@@ -140,19 +140,17 @@ templ CardsView(cards []models.Card, st models.Settings) {
 						Hide Completed
 					</label>
 				</div>
-				@CardTable(cards, st)
+				@TaskTable(cards, st)
 			</div>
 			<div id="modal-card"></div>
 		</body>
 	</html>
 }
 
-templ ModalCardView(card models.Card) {
+templ ModalTaskView(card models.Task) {
 	<div id="modal-card" class="modal" style="display: flex">
 		<div class="modal-content" id="modalContent">
-			<!-- Form Content -->
-			// <div class="modal-title">Edit Card</div>
-			@ModalCardForm(card) {
+			@ModalTaskForm(card) {
 				<input type="hidden" name="card-id" value={ card.Id }/>
 				<div class="modal-title-row">
 					<input type="text" id="card-title" name="card-title" class="modal-task-title" value={ card.Title } placeholder="Card title..."/>
@@ -187,12 +185,12 @@ templ ModalCardView(card models.Card) {
 	</div>
 }
 
-templ ModalCardForm(card models.Card) {
+templ ModalTaskForm(card models.Task) {
 	<form
-		if card == models.EMPTY_CARD {
-			hx-post="/cards"
+		if card == models.EMPTY_TASK {
+			hx-post="/tasks"
 		} else {
-			hx-put="/cards"
+			hx-put="/tasks"
 		}
 		hx-on:htmx:after-request="closeModal('modal-card')"
 		hx-target="#cards-table"

@@ -6,16 +6,16 @@ import (
 
 	"net/http"
 
-	"github.com/inaryzen/prio_cards/components"
-	"github.com/inaryzen/prio_cards/consts"
-	"github.com/inaryzen/prio_cards/db"
-	"github.com/inaryzen/prio_cards/models"
-	"github.com/inaryzen/prio_cards/services"
+	"github.com/inaryzen/priotasks/components"
+	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/db"
+	"github.com/inaryzen/priotasks/models"
+	"github.com/inaryzen/priotasks/services"
 )
 
-func resolveCardOrNotFound(w http.ResponseWriter, r *http.Request) (models.Card, error) {
+func resolveTaskOrNotFound(w http.ResponseWriter, r *http.Request) (models.Task, error) {
 	idString := r.PathValue("id")
-	card, err := db.FindCard(idString)
+	card, err := db.FindTask(idString)
 	if errors.Is(err, db.ErrNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 		log.Println(err)
@@ -26,12 +26,12 @@ func resolveCardOrNotFound(w http.ResponseWriter, r *http.Request) (models.Card,
 	return card, err
 }
 
-func PostCardToggleCompleted(w http.ResponseWriter, r *http.Request) {
-	card, err := resolveCardOrNotFound(w, r)
+func PostTaskToggleCompleted(w http.ResponseWriter, r *http.Request) {
+	card, err := resolveTaskOrNotFound(w, r)
 	if err != nil {
 		return
 	}
-	err = services.FlipCard(card)
+	err = services.FlipTask(card)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
@@ -39,49 +39,49 @@ func PostCardToggleCompleted(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func GetViewEmptyCard(w http.ResponseWriter, r *http.Request) {
-	cardsView := components.ModalCardView(models.EMPTY_CARD)
+func GetViewEmptyTask(w http.ResponseWriter, r *http.Request) {
+	cardsView := components.ModalTaskView(models.EMPTY_TASK)
 	cardsView.Render(r.Context(), w)
 }
 
-func GetViewCardByIdHandler(w http.ResponseWriter, r *http.Request) {
-	card, err := resolveCardOrNotFound(w, r)
+func GetViewTaskByIdHandler(w http.ResponseWriter, r *http.Request) {
+	card, err := resolveTaskOrNotFound(w, r)
 	if err != nil {
 		return
 	}
 
-	cardsView := components.ModalCardView(card)
+	cardsView := components.ModalTaskView(card)
 	cardsView.Render(r.Context(), w)
 }
 
 // TODO: Optimize. Instead of reloading the whole table, update only a single row
-func PutCardHandler(w http.ResponseWriter, r *http.Request) {
-	c := resolveCardFromForm(r)
-	err := services.UpdateCard(c)
+func PutTaskHandler(w http.ResponseWriter, r *http.Request) {
+	c := resolveTaskFromForm(r)
+	err := services.UpdateTask(c)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	drawCardTable(w, r)
+	drawTaskTable(w, r)
 }
 
-func PostCardHandler(w http.ResponseWriter, r *http.Request) {
-	c := resolveCardFromForm(r)
+func PostTaskHandler(w http.ResponseWriter, r *http.Request) {
+	c := resolveTaskFromForm(r)
 	card := models.Create(c)
-	err := services.SaveCard(card)
+	err := services.SaveTask(card)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	drawCardTable(w, r)
+	drawTaskTable(w, r)
 }
 
-func resolveCardFromForm(r *http.Request) models.Card {
+func resolveTaskFromForm(r *http.Request) models.Task {
 	formPriority := r.FormValue("modal-task-priority")
 	prio, err := models.StrToTaskPriority(formPriority)
 	if err != nil {
 		log.Printf("failed to parse Priority: %v: %v", formPriority, err)
 	}
 
-	return models.Card{
+	return models.Task{
 		Id:       r.FormValue("card-id"),
 		Content:  r.FormValue("card-text"),
 		Title:    r.FormValue("card-title"),
@@ -89,25 +89,25 @@ func resolveCardFromForm(r *http.Request) models.Card {
 	}
 }
 
-func drawCardTable(w http.ResponseWriter, r *http.Request) {
+func drawTaskTable(w http.ResponseWriter, r *http.Request) {
 	settings, err := findSettingsOrWriteError(w)
 	if err != nil {
 		return
 	}
-	cards, err := findCardsOrWriteError(w)
+	cards, err := findTasksOrWriteError(w)
 	if err != nil {
 		return
 	}
-	cardsView := components.CardTable(cards, settings)
+	cardsView := components.TaskTable(cards, settings)
 	cardsView.Render(r.Context(), w)
 }
 
-func findCardsOrWriteError(w http.ResponseWriter) (cards []models.Card, err error) {
+func findTasksOrWriteError(w http.ResponseWriter) (cards []models.Task, err error) {
 	settings, err := findSettingsOrWriteError(w)
 	if err != nil {
 		return
 	}
-	cards, err = services.FindCards(settings.FilterCompleted, settings.ActiveSortColumn, settings.ActiveSortDirection)
+	cards, err = services.FindTasks(settings.FilterCompleted, settings.ActiveSortColumn, settings.ActiveSortDirection)
 
 	if err != nil {
 		log.Printf("%s", err)
@@ -125,8 +125,8 @@ func findSettingsOrWriteError(w http.ResponseWriter) (models.Settings, error) {
 	return settings, err
 }
 
-func GetCards(w http.ResponseWriter, r *http.Request) {
-	cards, err := findCardsOrWriteError(w)
+func GetTasks(w http.ResponseWriter, r *http.Request) {
+	cards, err := findTasksOrWriteError(w)
 	if err != nil {
 		return
 	}
@@ -135,7 +135,7 @@ func GetCards(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	cardsView := components.CardsView(cards, settings)
+	cardsView := components.TasksView(cards, settings)
 	cardsView.Render(r.Context(), w)
 }
 
@@ -163,5 +163,5 @@ func PostToggleSortTable(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	drawCardTable(w, r)
+	drawTaskTable(w, r)
 }

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/inaryzen/prio_cards/common"
-	"github.com/inaryzen/prio_cards/consts"
-	"github.com/inaryzen/prio_cards/db"
-	"github.com/inaryzen/prio_cards/models"
+	"github.com/inaryzen/priotasks/common"
+	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/db"
+	"github.com/inaryzen/priotasks/models"
 )
 
 type DumpScheduler struct {
@@ -70,7 +70,7 @@ func Load(fileName string) error {
 		return err
 	}
 
-	var tasks []models.Card
+	var tasks []models.Task
 	for _, rec := range records {
 		task, err := recToTask(rec)
 		if err != nil {
@@ -82,13 +82,13 @@ func Load(fileName string) error {
 
 	common.Debug("tasks to be uploaded: %v", len(tasks))
 
-	err = db.DeleteAllCards()
+	err = db.DeleteAllTasks()
 	if err != nil {
 		return err
 	}
 
 	for _, t := range tasks {
-		err = db.SaveCard(t)
+		err = db.SaveTask(t)
 		if err != nil {
 			return err
 		}
@@ -97,13 +97,13 @@ func Load(fileName string) error {
 	return nil
 }
 
-func wrapSpecialSymbols(t models.Card) models.Card {
+func wrapSpecialSymbols(t models.Task) models.Task {
 	t.Content = strings.ReplaceAll(t.Content, "\n", "\\n")
 	t.Title = strings.ReplaceAll(t.Title, "\n", "\\n")
 	return t
 }
 
-func unwrapSpecialSymbols(t models.Card) models.Card {
+func unwrapSpecialSymbols(t models.Task) models.Task {
 	t.Content = strings.ReplaceAll(t.Content, "\\n", "\n")
 	return t
 }
@@ -118,7 +118,7 @@ const (
 	Field_Priority
 )
 
-func taskToRec(c models.Card) []string {
+func taskToRec(c models.Task) []string {
 	c = wrapSpecialSymbols(c)
 
 	return []string{
@@ -132,26 +132,26 @@ func taskToRec(c models.Card) []string {
 	}
 }
 
-func recToTask(record []string) (models.Card, error) {
+func recToTask(record []string) (models.Task, error) {
 	created, err := time.Parse(consts.DEFAULT_TIME_FORMAT, record[Field_Created])
 	if err != nil {
-		return models.EMPTY_CARD, err
+		return models.EMPTY_TASK, err
 	}
 	updated, err := time.Parse(consts.DEFAULT_TIME_FORMAT, record[Field_Updated])
 	if err != nil {
-		return models.EMPTY_CARD, err
+		return models.EMPTY_TASK, err
 	}
 	completed, err := time.Parse(consts.DEFAULT_TIME_FORMAT, record[Field_Completed])
 	common.Debug("%v", completed)
 	if err != nil {
-		return models.EMPTY_CARD, err
+		return models.EMPTY_TASK, err
 	}
 	priority, err := strconv.Atoi(record[Field_Priority])
 	if err != nil {
-		return models.EMPTY_CARD, err
+		return models.EMPTY_TASK, err
 	}
 
-	result := models.Card{
+	result := models.Task{
 		Id:        record[Field_Id],
 		Title:     record[Field_Title],
 		Content:   record[Field_Content],
@@ -190,7 +190,7 @@ func Dump() error {
 	w := csv.NewWriter(file)
 	defer w.Flush()
 
-	cards, err := db.Cards()
+	cards, err := db.Tasks()
 	if err != nil {
 		log.Printf("%v", err)
 		return err

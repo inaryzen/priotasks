@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/inaryzen/prio_cards/db"
-	"github.com/inaryzen/prio_cards/models"
+	"github.com/inaryzen/priotasks/db"
+	"github.com/inaryzen/priotasks/models"
 )
 
 const SETTINGS_ID = "UserSettings"

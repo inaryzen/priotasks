@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/inaryzen/prio_cards/common"
-	"github.com/inaryzen/prio_cards/consts"
-	"github.com/inaryzen/prio_cards/csv"
-	"github.com/inaryzen/prio_cards/db"
-	"github.com/inaryzen/prio_cards/handlers"
+	"github.com/inaryzen/priotasks/common"
+	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/csv"
+	"github.com/inaryzen/priotasks/db"
+	"github.com/inaryzen/priotasks/handlers"
 )
 
 func main() {
@@ -67,19 +67,19 @@ func main() {
 
 func configureServerMux() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/cards", http.StatusFound) // 302
+		http.Redirect(w, r, consts.URL_TASKS, http.StatusFound) // 302
 	})
 
-	http.HandleFunc("GET /cards", handlers.GetCards)
-	http.HandleFunc("POST /cards", handlers.PostCardHandler)
-	http.HandleFunc("PUT /cards", handlers.PutCardHandler)
-	http.HandleFunc("POST /cards/{id}/toggle-completed", handlers.PostCardToggleCompleted)
+	http.HandleFunc("GET "+consts.URL_TASKS, handlers.GetTasks)
+	http.HandleFunc("POST "+consts.URL_TASKS, handlers.PostTaskHandler)
+	http.HandleFunc("PUT "+consts.URL_TASKS, handlers.PutTaskHandler)
+	http.HandleFunc("POST /tasks/{id}/toggle-completed", handlers.PostTaskToggleCompleted)
 
 	http.HandleFunc("POST /toggle-completed-filter", handlers.PostToggleCompletedFilter)
 	http.HandleFunc("POST "+consts.URL_TOGGLE_SORT_TABLE, handlers.PostToggleSortTable)
 
-	http.HandleFunc("GET /view/card/{id}", handlers.GetViewCardByIdHandler)
-	http.HandleFunc("GET /view/new-card", handlers.GetViewEmptyCard)
+	http.HandleFunc("GET /view/task/{id}", handlers.GetViewTaskByIdHandler)
+	http.HandleFunc("GET /view/new-task", handlers.GetViewEmptyTask)
 
 	fs := http.FileServer(http.Dir("./assets"))
 	http.Handle("/assets/", http.StripPrefix("/assets/", fs))

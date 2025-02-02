@@ -6,15 +6,16 @@ import (
 	"log"
 	"slices"
 
-	"github.com/inaryzen/prio_cards/db"
-	"github.com/inaryzen/prio_cards/models"
+	"github.com/inaryzen/priotasks/common"
+	"github.com/inaryzen/priotasks/db"
+	"github.com/inaryzen/priotasks/models"
 )
 
-func FindCards(FilterCompleted bool, sort models.SortColumn, dir models.SortDirection) ([]models.Card, error) {
-	var cards []models.Card
+func FindTasks(FilterCompleted bool, sort models.SortColumn, dir models.SortDirection) ([]models.Task, error) {
+	var cards []models.Task
 	var err error
 
-	cards, err = db.Cards()
+	cards, err = db.Tasks()
 	if err != nil {
 		return cards, fmt.Errorf("failed to retrieve cards: %w", err)
 	}
@@ -29,7 +30,7 @@ func FindCards(FilterCompleted bool, sort models.SortColumn, dir models.SortDire
 		cards = filtered
 	}
 
-	slices.SortFunc(cards, func(a, b models.Card) int {
+	slices.SortFunc(cards, func(a, b models.Task) int {
 		if sort == models.Completed {
 			if dir == models.Desc {
 				return cmp.Compare(b.Completed.Unix(), a.Completed.Unix())
@@ -56,14 +57,14 @@ func FindCards(FilterCompleted bool, sort models.SortColumn, dir models.SortDire
 	return cards, err
 }
 
-func UpdateCard(c models.Card) error {
-	card, err := db.FindCard(c.Id)
+func UpdateTask(c models.Task) error {
+	card, err := db.FindTask(c.Id)
 	if err != nil {
 		log.Printf("failed to find the record: %s: %s", c.Id, err)
 		return err
 	}
 	card = card.Update(c)
-	err = db.SaveCard(card)
+	err = db.SaveTask(card)
 	if err != nil {
 		log.Printf("failed to update the record: %s: %s", card.Id, err)
 		return err
@@ -71,8 +72,8 @@ func UpdateCard(c models.Card) error {
 	return nil
 }
 
-func SaveCard(c models.Card) error {
-	err := db.SaveCard(c)
+func SaveTask(c models.Task) error {
+	err := db.SaveTask(c)
 	if err != nil {
 		log.Printf("failed to update the record: %s: %s", c.Id, err)
 		return err
@@ -80,16 +81,18 @@ func SaveCard(c models.Card) error {
 	return nil
 }
 
-func FlipCard(card models.Card) error {
+func FlipTask(card models.Task) error {
 	if card.Completed == models.NOT_COMPLETED {
 		card = card.Complete()
 	} else {
 		card = card.Uncomplete()
 	}
-	err := db.SaveCard(card)
+	err := db.SaveTask(card)
 	if err != nil {
 		return fmt.Errorf("failed to flip the card: %v: %w", card.Id, err)
 	}
-	log.Printf("Updated Completed status of card: %v", card)
+	if common.IsDebug() {
+		log.Printf("Updated Completed status of card: %v", card)
+	}
 	return nil
 }
