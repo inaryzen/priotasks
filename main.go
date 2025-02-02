@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -22,6 +23,8 @@ import (
 var assets embed.FS
 
 func main() {
+	printVersion()
+
 	common.InitConfig()
 
 	var port string = fmt.Sprintf(":%v", common.Conf.ServerPort)
@@ -67,6 +70,16 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
+}
+
+func printVersion() {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("Unable to determine version information.")
+		return
+	}
+	fmt.Printf("version:%s\n", buildInfo.Main.Version)
+	fmt.Printf("sum:%s\n", buildInfo.Main.Sum)
 }
 
 func configureServerMux() {
