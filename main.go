@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,6 +17,9 @@ import (
 	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/handlers"
 )
+
+//go:embed assets/*
+var assets embed.FS
 
 func main() {
 	common.InitConfig()
@@ -81,8 +85,7 @@ func configureServerMux() {
 	http.HandleFunc("GET /view/task/{id}", handlers.GetViewTaskByIdHandler)
 	http.HandleFunc("GET /view/new-task", handlers.GetViewEmptyTask)
 
-	fs := http.FileServer(http.Dir("./assets"))
-	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	http.Handle("/assets/", http.FileServer(http.FS(assets)))
 }
 
 func startServer(s *http.Server) {
