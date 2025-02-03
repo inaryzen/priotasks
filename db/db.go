@@ -28,7 +28,7 @@ func DbInit() {
 	}
 	dir = filepath.Join(dir, "db")
 
-	d, err := badger.Open(badger.DefaultOptions(dir))
+	d, err := badger.Open(badger.DefaultOptions(dir).WithLogger(nil))
 	if err != nil {
 		log.Fatal(err)
 	}

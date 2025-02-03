@@ -52,7 +52,7 @@ func main() {
 	}
 
 	if common.Conf.AutomaticDump {
-		fmt.Println("auto-dump enabled...")
+		log.Println("auto-dump enabled...")
 		s := csv.NewDumpScheduler(2400) // 40min
 		defer s.Release()
 	}
@@ -65,7 +65,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	fmt.Println("\nshutting down the server...")
+	fmt.Println()
+	log.Println("shutting down the server...")
 
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
@@ -103,8 +104,8 @@ func configureServerMux() {
 }
 
 func startServer(s *http.Server) {
-	fmt.Println("starting the server...")
-	fmt.Printf("http://localhost%s \n", s.Addr)
+	log.Println("starting the server...")
+	log.Printf("http://localhost%s \n", s.Addr)
 	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Printf("Error starting server: %v\n", err)
 	}

@@ -40,7 +40,11 @@ func IsDebug() bool {
 
 func Debug(format string, v ...any) {
 	if IsDebug() {
-		log.Printf(format+"\n", v)
+		if len(v) == 0 {
+			log.Println(format)
+		} else {
+			log.Printf(format+"\n", v...)
+		}
 	}
 }
 
