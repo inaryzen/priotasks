@@ -33,8 +33,10 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
-	db.DbInit()
-	defer db.DbClose()
+	badgerDb := db.NewDbBadger()
+	db.SetDB(badgerDb)
+	db.DB().Init()
+	defer db.DB().Close()
 
 	if common.Conf.DumpOnStartup {
 		if common.IsDebug() {

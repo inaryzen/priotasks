@@ -24,7 +24,7 @@ func FindUserSettings() (models.Settings, error) {
 	var s models.Settings
 	var err error
 
-	s, err = db.FindSettings(SETTINGS_ID)
+	s, err = db.DB().FindSettings(SETTINGS_ID)
 	if errors.Is(err, db.ErrNotFound) {
 		err = UpdateUserSettings(models.Settings{
 			Id:              SETTINGS_ID,
@@ -39,7 +39,7 @@ func FindUserSettings() (models.Settings, error) {
 }
 
 func UpdateUserSettings(s models.Settings) error {
-	return db.SaveSettings(s)
+	return db.DB().SaveSettings(s)
 }
 
 func ToggleSorting(s models.Settings, newColumn models.SortColumn, actDir models.SortDirection) error {

@@ -15,7 +15,7 @@ func FindTasks(FilterCompleted bool, sort models.SortColumn, dir models.SortDire
 	var cards []models.Task
 	var err error
 
-	cards, err = db.Tasks()
+	cards, err = db.DB().Tasks()
 	if err != nil {
 		return cards, fmt.Errorf("failed to retrieve cards: %w", err)
 	}
@@ -60,7 +60,7 @@ func FindTasks(FilterCompleted bool, sort models.SortColumn, dir models.SortDire
 func DeleteTask(taskId string) error {
 	common.Debug("deleting task: %v", taskId)
 
-	err := db.DeleteTask(taskId)
+	err := db.DB().DeleteTask(taskId)
 	if err != nil {
 		log.Printf("failed to delete the task: %s: %s", taskId, err)
 		return err
@@ -68,14 +68,25 @@ func DeleteTask(taskId string) error {
 	return nil
 }
 
+func DeleteAllTasks() error {
+	common.Debug("deleting all tasks")
+
+	err := db.DB().DeleteAllTasks()
+	if err != nil {
+		log.Printf("failed to delete all tasks: %s", err)
+		return err
+	}
+	return nil
+}
+
 func UpdateTask(c models.Task) error {
-	card, err := db.FindTask(c.Id)
+	card, err := db.DB().FindTask(c.Id)
 	if err != nil {
 		log.Printf("failed to find the record: %s: %s", c.Id, err)
 		return err
 	}
 	card = card.Update(c)
-	err = db.SaveTask(card)
+	err = db.DB().SaveTask(card)
 	if err != nil {
 		log.Printf("failed to update the record: %s: %s", card.Id, err)
 		return err
@@ -84,7 +95,7 @@ func UpdateTask(c models.Task) error {
 }
 
 func SaveTask(c models.Task) error {
-	err := db.SaveTask(c)
+	err := db.DB().SaveTask(c)
 	if err != nil {
 		log.Printf("failed to update the record: %s: %s", c.Id, err)
 		return err
@@ -98,7 +109,7 @@ func FlipTask(card models.Task) error {
 	} else {
 		card = card.Uncomplete()
 	}
-	err := db.SaveTask(card)
+	err := db.DB().SaveTask(card)
 	if err != nil {
 		return fmt.Errorf("failed to flip the card: %v: %w", card.Id, err)
 	}

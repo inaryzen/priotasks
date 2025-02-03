@@ -11,8 +11,8 @@ import (
 
 	"github.com/inaryzen/priotasks/common"
 	"github.com/inaryzen/priotasks/consts"
-	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/models"
+	"github.com/inaryzen/priotasks/services"
 )
 
 type DumpScheduler struct {
@@ -82,13 +82,13 @@ func Load(fileName string) error {
 
 	common.Debug("tasks to be uploaded: %v", len(tasks))
 
-	err = db.DeleteAllTasks()
+	err = services.DeleteAllTasks()
 	if err != nil {
 		return err
 	}
 
 	for _, t := range tasks {
-		err = db.SaveTask(t)
+		err = services.SaveTask(t)
 		if err != nil {
 			return err
 		}
@@ -190,7 +190,7 @@ func Dump() error {
 	w := csv.NewWriter(file)
 	defer w.Flush()
 
-	cards, err := db.Tasks()
+	cards, err := services.FindTasks(false, models.Created, models.Desc)
 	if err != nil {
 		log.Printf("%v", err)
 		return err

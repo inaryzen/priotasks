@@ -15,7 +15,7 @@ import (
 
 func resolveTaskOrNotFound(w http.ResponseWriter, r *http.Request) (models.Task, error) {
 	idString := r.PathValue("id")
-	card, err := db.FindTask(idString)
+	card, err := db.DB().FindTask(idString)
 	if errors.Is(err, db.ErrNotFound) {
 		w.WriteHeader(http.StatusNotFound)
 		log.Println(err)
