@@ -169,6 +169,12 @@ templ ModalTaskView(card models.Task) {
 					<input type="text" id="card-title" name="card-title" class="modal-task-title" value={ card.Title } placeholder="Card title..."/>
 					<select id="modal-task-priority" name="modal-task-priority" class="modal-task-priority">
 						<option
+							value="3"
+							if card.Priority == models.PriorityUrgent {
+								selected
+							}
+						>{ models.PriorityUrgent.ToStr() }</option>
+						<option
 							value="2"
 							if card.Priority == models.PriorityHigh {
 								selected

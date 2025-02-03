@@ -21,6 +21,7 @@ const (
 	PriorityLow TaskPriority = iota
 	PriorityMedium
 	PriorityHigh
+	PriorityUrgent
 )
 
 func StrToTaskPriority(a string) (TaskPriority, error) {
@@ -34,6 +35,8 @@ func StrToTaskPriority(a string) (TaskPriority, error) {
 
 func (p TaskPriority) ToStr() string {
 	switch p {
+	case PriorityUrgent:
+		return "🚨 Urgent"
 	case PriorityHigh:
 		return "🔥 High"
 	case PriorityMedium:
