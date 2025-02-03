@@ -69,6 +69,10 @@ table #column-completed-status {
     text-align: center;
 }
 
+#column-delete {
+    text-align: center; /* Center content within the column */
+}
+
 #column-delete .btn-delete {
     background-color: transparent; /* No background */
     color: #888; /* Default grey color */
@@ -80,6 +84,7 @@ table #column-completed-status {
     align-items: center;
     justify-content: center;
     transition: color 0.3s, background-color 0.3s; /* Smooth transition */
+    margin: 0 auto; /* Center the button */
 }
 
 #column-delete .btn-delete:hover {
