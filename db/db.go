@@ -46,7 +46,6 @@ func Tasks() (result []models.Task, err error) {
 
 	err = dbBadger.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
-		opts.PrefetchSize = 10
 		it := txn.NewIterator(opts)
 		defer it.Close()
 
@@ -108,10 +107,29 @@ func FindTask(taskId string) (models.Task, error) {
 	return result, err
 }
 
+func DeleteTask(taskId string) error {
+	err := dbBadger.Update(func(txn *badger.Txn) error {
+		err := txn.Delete([]byte(PREFIX_TASK + taskId))
+		if err != nil {
+			if errors.Is(err, badger.ErrKeyNotFound) {
+				return ErrNotFound
+			}
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf("Error deleting task: %v\n", err)
+		return err
+	}
+	return nil
+}
+
 func DeleteAllTasks() error {
+	// TODO: try dbBadger.DropPrefix()
 	err := dbBadger.Update(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
-		opts.PrefetchSize = 10
 		it := txn.NewIterator(opts)
 		defer it.Close()
 

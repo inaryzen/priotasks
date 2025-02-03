@@ -69,6 +69,24 @@ table #column-completed-status {
     text-align: center;
 }
 
+#column-delete .btn-delete {
+    background-color: transparent; /* No background */
+    color: #888; /* Default grey color */
+    padding: 0;  /* Remove padding */
+    border: none;  /* No border */
+    font-size: 1.0em; /* Size for the emoji */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s, background-color 0.3s; /* Smooth transition */
+}
+
+#column-delete .btn-delete:hover {
+    color: #f44336; /* Red color on hover */
+    background-color: rgba(244, 67, 54, 0.1); /* Light red background for highlight */
+}
+
 /* Filter Panel */
 .filter-panel {
     margin-top: 20px;

@@ -57,6 +57,17 @@ func FindTasks(FilterCompleted bool, sort models.SortColumn, dir models.SortDire
 	return cards, err
 }
 
+func DeleteTask(taskId string) error {
+	common.Debug("deleting task: %v", taskId)
+
+	err := db.DeleteTask(taskId)
+	if err != nil {
+		log.Printf("failed to delete the task: %s: %s", taskId, err)
+		return err
+	}
+	return nil
+}
+
 func UpdateTask(c models.Task) error {
 	card, err := db.FindTask(c.Id)
 	if err != nil {

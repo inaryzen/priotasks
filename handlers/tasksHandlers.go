@@ -26,6 +26,20 @@ func resolveTaskOrNotFound(w http.ResponseWriter, r *http.Request) (models.Task,
 	return card, err
 }
 
+func DeleteTasksId(w http.ResponseWriter, r *http.Request) {
+	card, err := resolveTaskOrNotFound(w, r)
+	if err != nil {
+		return
+	}
+	err = services.DeleteTask(card.Id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+	drawTaskTable(w, r)
+}
+
 func PostTaskToggleCompleted(w http.ResponseWriter, r *http.Request) {
 	card, err := resolveTaskOrNotFound(w, r)
 	if err != nil {

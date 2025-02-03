@@ -16,6 +16,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
+			<col style="width: 60px;"/>
 			<col style="width: auto;"/>
 		</colgroup>
 		<thead>
@@ -24,7 +25,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 				<th>Title</th>
 				<th class="sortable-header">
 					<form
-						hx-post={consts.URL_TOGGLE_SORT_TABLE}
+						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
 						hx-target="#cards-table"
 						hx-swap="innerHTML"
 					>
@@ -36,10 +37,10 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 							Priority
 						</button>
 					</form>
-				</th>				
+				</th>
 				<th class="sortable-header">
 					<form
-						hx-post={consts.URL_TOGGLE_SORT_TABLE}
+						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
 						hx-target="#cards-table"
 						hx-swap="innerHTML"
 					>
@@ -54,7 +55,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 				</th>
 				<th class="sortable-header">
 					<form
-						hx-post={consts.URL_TOGGLE_SORT_TABLE}
+						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
 						hx-target="#cards-table"
 						hx-swap="innerHTML"
 					>
@@ -68,6 +69,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 					</form>
 				</th>
 				<th>Updated</th>
+				<th></th>
 				<th></th>
 			</tr>
 		</thead>
@@ -94,6 +96,16 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 					</td>
 					<td id="column-created">{ c.Created.Format("2006-01-02 15:04:05") }</td>
 					<td id="column-updated">{ c.Updated.Format("2006-01-02 15:04:05") }</td>
+					<td id="column-delete">
+						<button
+							type="button"
+							class="btn-delete"
+							hx-delete={ string(templ.URL(fmt.Sprintf("/tasks/%s", c.Id))) }
+							hx-target="#cards-table"
+							hx-swap="innerHTML"
+							title="Delete Task"
+						>🗑️</button>
+					</td>
 					<td></td>
 				</tr>
 			}
@@ -107,7 +119,7 @@ templ TasksView(cards []models.Task, st models.Settings) {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<link rel="icon" href="/assets/fav/favicon-32x32.png" type="image/png">
+			<link rel="icon" href="/assets/fav/favicon-32x32.png" type="image/png"/>
 			<title>Tasks</title>
 			<script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.js" integrity="sha384-BBDmZzVt6vjz5YbQqZPtFZW82o8QotoM7RUp5xOxV3nSJ8u2pSdtzFAbGKzTlKtg" crossorigin="anonymous"></script>
 			<script src="/assets/js/main.js"></script>
