@@ -1,6 +1,9 @@
 package models
 
-import "strconv"
+import (
+	"strconv"
+	"time"
+)
 
 type SortColumn int
 
@@ -50,12 +53,18 @@ func DirectionFromString(str string) (result SortDirection) {
 }
 
 type Settings struct {
-	Id                  string
-	FilterCompleted     bool
-	ActiveSortColumn    SortColumn
-	ActiveSortDirection SortDirection
+	Id         string
+	TasksQuery TasksQuery
+}
+
+type TasksQuery struct {
+	FilterCompleted bool
+	CompletedFrom   time.Time
+	CompletedTo     time.Time
+	SortColumn      SortColumn
+	SortDirection   SortDirection
 }
 
 func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {
-	return s.ActiveSortColumn == c && s.ActiveSortDirection == d
+	return s.TasksQuery.SortColumn == c && s.TasksQuery.SortDirection == d
 }

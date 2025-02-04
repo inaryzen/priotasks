@@ -172,7 +172,7 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	var settings models.Settings
 
 	row := d.instance.QueryRow("SELECT id, filter_completed, active_sort_column, active_sort_direction FROM settings WHERE id = ?", settingsId)
-	err := row.Scan(&settings.Id, &settings.FilterCompleted, &settings.ActiveSortColumn, &settings.ActiveSortDirection)
+	err := row.Scan(&settings.Id, &settings.TasksQuery.FilterCompleted, &settings.TasksQuery.SortColumn, &settings.TasksQuery.SortDirection)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.Settings{}, ErrNotFound
@@ -191,9 +191,71 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 			filter_completed=excluded.filter_completed,
 			active_sort_column=excluded.active_sort_column,
 			active_sort_direction=excluded.active_sort_direction
-	`, s.Id, s.FilterCompleted, s.ActiveSortColumn, s.ActiveSortDirection)
+	`, s.Id, s.TasksQuery.FilterCompleted, s.TasksQuery.SortColumn, s.TasksQuery.SortDirection)
 	if err != nil {
 		return fmt.Errorf("failed to save settings: %v: %w", s, err)
 	}
 	return nil
+}
+
+func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
+	var args []interface{}
+	sqlQuery := "SELECT id, title, content, created, updated, completed, priority FROM tasks WHERE 1=1"
+
+	if query.FilterCompleted {
+		sqlQuery += " AND completed = ?"
+		notCompleted := models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT)
+		args = append(args, notCompleted)
+	} else {
+		if !query.CompletedFrom.IsZero() {
+			sqlQuery += " AND completed >= ?"
+			args = append(args, query.CompletedFrom.Format(consts.DEFAULT_TIME_FORMAT))
+		}
+
+		if !query.CompletedTo.IsZero() {
+			sqlQuery += " AND completed <= ?"
+			args = append(args, query.CompletedTo.Format(consts.DEFAULT_TIME_FORMAT))
+		}
+	}
+
+	if query.SortColumn != models.ColumnUndefined {
+		sqlQuery += " ORDER BY "
+		switch query.SortColumn {
+		case models.Completed:
+			sqlQuery += "completed"
+		case models.Created:
+			sqlQuery += "created"
+		case models.Priority:
+			sqlQuery += "priority"
+		default:
+			sqlQuery += "created" // default sort
+		}
+
+		if query.SortDirection == models.Desc {
+			sqlQuery += " DESC"
+		} else {
+			sqlQuery += " ASC"
+		}
+	}
+
+	rows, err := d.instance.Query(sqlQuery, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query tasks: %w", err)
+	}
+	defer rows.Close()
+
+	var result []models.Task
+	for rows.Next() {
+		task, err := d.scanNextTask(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, task)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating tasks: %w", err)
+	}
+
+	return result, nil
 }

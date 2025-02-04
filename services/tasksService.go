@@ -1,60 +1,20 @@
 package services
 
 import (
-	"cmp"
 	"fmt"
 	"log"
-	"slices"
 
 	"github.com/inaryzen/priotasks/common"
 	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/models"
 )
 
-func FindTasks(FilterCompleted bool, sort models.SortColumn, dir models.SortDirection) ([]models.Task, error) {
-	var cards []models.Task
-	var err error
-
-	cards, err = db.DB().Tasks()
+func FindTasks(query models.TasksQuery) ([]models.Task, error) {
+	tasks, err := db.DB().FindTasks(query)
 	if err != nil {
-		return cards, fmt.Errorf("failed to retrieve cards: %w", err)
+		return nil, fmt.Errorf("failed to retrieve tasks: %w", err)
 	}
-
-	if FilterCompleted {
-		filtered := cards[:0]
-		for _, v := range cards {
-			if !v.IsCompleted() {
-				filtered = append(filtered, v)
-			}
-		}
-		cards = filtered
-	}
-
-	slices.SortFunc(cards, func(a, b models.Task) int {
-		if sort == models.Completed {
-			if dir == models.Desc {
-				return cmp.Compare(b.Completed.Unix(), a.Completed.Unix())
-			} else {
-				return cmp.Compare(a.Completed.Unix(), b.Completed.Unix())
-			}
-		} else if sort == models.Created {
-			if dir == models.Desc {
-				return cmp.Compare(b.Created.Unix(), a.Created.Unix())
-			} else {
-				return cmp.Compare(a.Created.Unix(), b.Created.Unix())
-			}
-		} else if sort == models.Priority {
-			if dir == models.Desc {
-				return cmp.Compare(b.Priority, a.Priority)
-			} else {
-				return cmp.Compare(a.Priority, b.Priority)
-			}
-		} else {
-			return cmp.Compare(b.Created.Unix(), a.Created.Unix())
-		}
-	})
-
-	return cards, err
+	return tasks, nil
 }
 
 func DeleteTask(taskId string) error {

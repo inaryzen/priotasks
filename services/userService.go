@@ -15,7 +15,7 @@ func SetCompletedFilter(val bool) error {
 	if err != nil {
 		return err
 	}
-	s.FilterCompleted = val
+	s.TasksQuery.FilterCompleted = val
 	err = UpdateUserSettings(s)
 	return err
 }
@@ -27,8 +27,10 @@ func FindUserSettings() (models.Settings, error) {
 	s, err = db.DB().FindSettings(SETTINGS_ID)
 	if errors.Is(err, db.ErrNotFound) {
 		err = UpdateUserSettings(models.Settings{
-			Id:              SETTINGS_ID,
-			FilterCompleted: true,
+			Id: SETTINGS_ID,
+			TasksQuery: models.TasksQuery{
+				FilterCompleted: true,
+			},
 		})
 	}
 	if err != nil {
@@ -43,11 +45,11 @@ func UpdateUserSettings(s models.Settings) error {
 }
 
 func ToggleSorting(s models.Settings, newColumn models.SortColumn, actDir models.SortDirection) error {
-	if s.ActiveSortColumn == newColumn {
-		s.ActiveSortDirection = actDir.Flip()
+	if s.TasksQuery.SortColumn == newColumn {
+		s.TasksQuery.SortDirection = actDir.Flip()
 	} else {
-		s.ActiveSortDirection = models.Desc // default
+		s.TasksQuery.SortDirection = models.Desc // default
 	}
-	s.ActiveSortColumn = newColumn
+	s.TasksQuery.SortColumn = newColumn
 	return UpdateUserSettings(s)
 }

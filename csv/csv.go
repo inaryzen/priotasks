@@ -190,7 +190,11 @@ func Dump() error {
 	w := csv.NewWriter(file)
 	defer w.Flush()
 
-	cards, err := services.FindTasks(false, models.Created, models.Desc)
+	cards, err := services.FindTasks(models.TasksQuery{
+		FilterCompleted: false,
+		SortColumn:      models.Created,
+		SortDirection:   models.Desc,
+	})
 	if err != nil {
 		log.Printf("%v", err)
 		return err

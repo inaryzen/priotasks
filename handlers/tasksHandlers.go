@@ -121,7 +121,7 @@ func findTasksOrWriteError(w http.ResponseWriter) (cards []models.Task, err erro
 	if err != nil {
 		return
 	}
-	cards, err = services.FindTasks(settings.FilterCompleted, settings.ActiveSortColumn, settings.ActiveSortDirection)
+	cards, err = services.FindTasks(settings.TasksQuery)
 
 	if err != nil {
 		log.Printf("%s", err)

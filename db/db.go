@@ -20,6 +20,7 @@ type Db interface {
 	Close()
 	Tasks() ([]models.Task, error)
 	FindTask(taskId string) (models.Task, error)
+	FindTasks(query models.TasksQuery) ([]models.Task, error)
 	DeleteTask(taskId string) error
 	DeleteAllTasks() error
 	SaveTask(task models.Task) error

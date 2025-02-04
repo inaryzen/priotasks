@@ -30,8 +30,8 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 						hx-swap="innerHTML"
 					>
 						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Priority)) }/>
-						if st.ActiveSortColumn == models.Priority {
-							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.ActiveSortDirection)) }/>
+						if st.TasksQuery.SortColumn == models.Priority {
+							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.TasksQuery.SortDirection)) }/>
 						}
 						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Priority, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Priority, models.Asc)) }>
 							Priority
@@ -45,8 +45,8 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 						hx-swap="innerHTML"
 					>
 						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Completed)) }/>
-						if st.ActiveSortColumn == models.Completed {
-							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.ActiveSortDirection)) }/>
+						if st.TasksQuery.SortColumn == models.Completed {
+							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.TasksQuery.SortDirection)) }/>
 						}
 						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Completed, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Completed, models.Asc)) }>
 							Completed
@@ -60,8 +60,8 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 						hx-swap="innerHTML"
 					>
 						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Created)) }/>
-						if st.ActiveSortColumn == models.Created {
-							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.ActiveSortDirection)) }/>
+						if st.TasksQuery.SortColumn == models.Created {
+							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.TasksQuery.SortDirection)) }/>
 						}
 						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Created, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Created, models.Asc)) }>
 							Created Date
@@ -139,7 +139,7 @@ templ TasksView(cards []models.Task, st models.Settings) {
 				<div class="filter-panel">
 					<label>
 						<input
-							if st.FilterCompleted {
+							if st.TasksQuery.FilterCompleted {
 								checked
 							}
 							type="checkbox"
