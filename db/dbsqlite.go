@@ -49,11 +49,69 @@ func (d *DbSQLite) Init() {
 			id TEXT PRIMARY KEY,
 			filter_completed BOOLEAN,
 			active_sort_column INTEGER,
-			active_sort_direction INTEGER
+			active_sort_direction INTEGER,
+			completed_from TEXT,
+			completed_to TEXT
 		);
 	`)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	d.addSettingsCompletedFrom()
+	d.addSettingsCompletedTo()
+}
+
+func (d *DbSQLite) columnExists(tableName, columnName string) (bool, error) {
+	query := fmt.Sprintf("PRAGMA table_info(%s);", tableName)
+	rows, err := d.instance.Query(query)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cid int
+		var name, ctype, notnull string
+		var dfltValue interface{}
+		var primaryKey int
+
+		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dfltValue, &primaryKey); err != nil {
+			return false, err
+		}
+
+		if name == columnName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (d *DbSQLite) addSettingsCompletedFrom() {
+	exists, err := d.columnExists("settings", "completed_from")
+	if err != nil {
+		panic(err)
+	}
+
+	if !exists {
+		_, err = d.instance.Exec("ALTER TABLE settings ADD COLUMN completed_from TEXT DEFAULT '" + models.NOT_COMPLETED.Format(consts.DEFAULT_DATE_FORMAT) + "'")
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func (d *DbSQLite) addSettingsCompletedTo() {
+	exists, err := d.columnExists("settings", "completed_to")
+	if err != nil {
+		panic(err)
+	}
+
+	if !exists {
+		_, err = d.instance.Exec("ALTER TABLE settings ADD COLUMN completed_to TEXT DEFAULT '" + models.NOT_COMPLETED.Format(consts.DEFAULT_DATE_FORMAT) + "'")
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -170,9 +228,22 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 
 func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	var settings models.Settings
+	var completedFrom, completedTo string
 
-	row := d.instance.QueryRow("SELECT id, filter_completed, active_sort_column, active_sort_direction FROM settings WHERE id = ?", settingsId)
-	err := row.Scan(&settings.Id, &settings.TasksQuery.FilterCompleted, &settings.TasksQuery.SortColumn, &settings.TasksQuery.SortDirection)
+	row := d.instance.QueryRow(`
+        SELECT id, filter_completed, active_sort_column, active_sort_direction, 
+               completed_from, completed_to 
+        FROM settings 
+        WHERE id = ?`, settingsId)
+
+	err := row.Scan(
+		&settings.Id,
+		&settings.TasksQuery.FilterCompleted,
+		&settings.TasksQuery.SortColumn,
+		&settings.TasksQuery.SortDirection,
+		&completedFrom,
+		&completedTo,
+	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.Settings{}, ErrNotFound
@@ -180,18 +251,63 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 		return models.Settings{}, fmt.Errorf("failed to fetch settings: %s: %w", settingsId, err)
 	}
 
+	if completedFrom == "" {
+		completedFrom = time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
+	}
+	settings.TasksQuery.CompletedFrom, err = time.Parse(consts.DEFAULT_DATE_FORMAT, completedFrom)
+	if err != nil {
+		return models.Settings{}, fmt.Errorf("failed to parse completed_from: %w", err)
+	}
+
+	if completedTo == "" {
+		completedTo = time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
+	}
+	settings.TasksQuery.CompletedTo, err = time.Parse(consts.DEFAULT_DATE_FORMAT, completedTo)
+	if err != nil {
+		return models.Settings{}, fmt.Errorf("failed to parse completed_to: %w", err)
+	}
+
 	return settings, nil
 }
 
 func (d *DbSQLite) SaveSettings(s models.Settings) error {
-	_, err := d.instance.Exec(`
-		INSERT INTO settings (id, filter_completed, active_sort_column, active_sort_direction)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT(id) DO UPDATE SET
-			filter_completed=excluded.filter_completed,
-			active_sort_column=excluded.active_sort_column,
-			active_sort_direction=excluded.active_sort_direction
-	`, s.Id, s.TasksQuery.FilterCompleted, s.TasksQuery.SortColumn, s.TasksQuery.SortDirection)
+	sqlQuery := `
+        INSERT INTO settings (
+            id, 
+            filter_completed, 
+            active_sort_column, 
+            active_sort_direction,
+            completed_from,
+            completed_to
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            filter_completed=excluded.filter_completed,
+            active_sort_column=excluded.active_sort_column,
+            active_sort_direction=excluded.active_sort_direction,
+            completed_from=excluded.completed_from,
+            completed_to=excluded.completed_to
+    `
+	completedFrom := time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
+	if !s.TasksQuery.CompletedFrom.IsZero() {
+		completedFrom = s.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT)
+	}
+
+	completedTo := time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
+	if !s.TasksQuery.CompletedTo.IsZero() {
+		completedTo = s.TasksQuery.CompletedTo.Format(consts.DEFAULT_DATE_FORMAT)
+	}
+
+	args := []interface{}{
+		s.Id,
+		s.TasksQuery.FilterCompleted,
+		s.TasksQuery.SortColumn,
+		s.TasksQuery.SortDirection,
+		completedFrom,
+		completedTo,
+	}
+
+	_, err := d.instance.Exec(sqlQuery, args...)
 	if err != nil {
 		return fmt.Errorf("failed to save settings: %v: %w", s, err)
 	}
@@ -202,19 +318,21 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 	var args []interface{}
 	sqlQuery := "SELECT id, title, content, created, updated, completed, priority FROM tasks WHERE 1=1"
 
+	common.Debug("FindTasks: query: %v", query)
+
 	if query.FilterCompleted {
 		sqlQuery += " AND completed = ?"
 		notCompleted := models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT)
 		args = append(args, notCompleted)
 	} else {
 		if !query.CompletedFrom.IsZero() {
-			sqlQuery += " AND completed >= ?"
-			args = append(args, query.CompletedFrom.Format(consts.DEFAULT_TIME_FORMAT))
+			sqlQuery += " AND (completed >= ? OR completed = ?)"
+			args = append(args, query.CompletedFrom.Format(consts.DEFAULT_TIME_FORMAT), models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT))
 		}
 
 		if !query.CompletedTo.IsZero() {
-			sqlQuery += " AND completed <= ?"
-			args = append(args, query.CompletedTo.Format(consts.DEFAULT_TIME_FORMAT))
+			sqlQuery += " AND (completed <= ? OR completed = ?)"
+			args = append(args, query.CompletedTo.Format(consts.DEFAULT_TIME_FORMAT), models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT))
 		}
 	}
 
@@ -237,6 +355,9 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 			sqlQuery += " ASC"
 		}
 	}
+
+	common.Debug("FindTasks: sqlQuery: %v", sqlQuery)
+	common.Debug("FindTasks: args: %v", args)
 
 	rows, err := d.instance.Query(sqlQuery, args...)
 	if err != nil {

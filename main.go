@@ -96,7 +96,9 @@ func configureServerMux() {
 	http.HandleFunc("POST /tasks/{id}/toggle-completed", handlers.PostTaskToggleCompleted)
 	http.HandleFunc("DELETE "+consts.URL_TASKS_ID, handlers.DeleteTasksId)
 
-	http.HandleFunc("POST /toggle-completed-filter", handlers.PostToggleCompletedFilter)
+	// http.HandleFunc("POST /toggle-completed-filter", handlers.PostFilter)
+	http.HandleFunc("POST /filter/{name}", handlers.PostFilterName)
+
 	http.HandleFunc("POST "+consts.URL_TOGGLE_SORT_TABLE, handlers.PostToggleSortTable)
 
 	http.HandleFunc("GET /view/task/{id}", handlers.GetViewTaskByIdHandler)

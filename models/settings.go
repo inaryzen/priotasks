@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -63,6 +64,11 @@ type TasksQuery struct {
 	CompletedTo     time.Time
 	SortColumn      SortColumn
 	SortDirection   SortDirection
+}
+
+func (t TasksQuery) String() string {
+	return fmt.Sprintf("FilterCompleted: %v, CompletedFrom: %v, CompletedTo: %v, SortColumn: %v, SortDirection: %v",
+		t.FilterCompleted, t.CompletedFrom, t.CompletedTo, t.SortColumn, t.SortDirection)
 }
 
 func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {

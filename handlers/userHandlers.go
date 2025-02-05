@@ -3,24 +3,75 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/inaryzen/priotasks/common"
 	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/models"
 	"github.com/inaryzen/priotasks/services"
 )
 
-func PostToggleCompletedFilter(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+func PostFilterName(w http.ResponseWriter, r *http.Request) {
+	s, err := services.FindUserSettings()
+	t := s.TasksQuery
+
 	if err != nil {
-		http.Error(w, "Unable to parse form", http.StatusBadRequest)
-		return
-	}
-	filter := r.Form.Get(consts.COMPLETED_FILTER_NAME)
-	value := filter != ""
-	err = services.SetCompletedFilter(value)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(err)
+		internalServerError(w, err)
 	}
 
+	r.ParseForm()
+
+	filterName := r.PathValue("name")
+	switch filterName {
+	case consts.COMPLETED_FILTER_NAME:
+		filter := r.Form.Get(consts.COMPLETED_FILTER_NAME)
+		value := filter != ""
+		t.FilterCompleted = value
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("PostFilterName: error updating filter completed: %v", err)
+			return
+		}
+	case consts.FILTER_COMPLETED_FROM:
+		value := r.Form.Get(consts.FILTER_COMPLETED_FROM)
+		var completedFrom time.Time = models.NOT_COMPLETED
+		if value != "" {
+			completedFrom, err = time.Parse(consts.DEFAULT_DATE_FORMAT, value)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				log.Printf("PostFilterName: error parsing completed from date: %v", err)
+				return
+			}
+		}
+		t.CompletedFrom = completedFrom
+	case consts.FILTER_COMPLETED_TO:
+		value := r.Form.Get(consts.FILTER_COMPLETED_TO)
+		var completedTo time.Time = models.NOT_COMPLETED
+		if value != "" {
+			completedTo, err = time.Parse(consts.DEFAULT_DATE_FORMAT, value)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				log.Printf("PostFilterName: error parsing completed to date: %v", err)
+				return
+			}
+		}
+		t.CompletedTo = completedTo
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("unknown filter name")
+	}
+
+	s.TasksQuery = t
+	services.UpdateUserSettings(s)
+
+	common.Debug("PostFilterName: %v", s)
+	common.Debug("PostFilterName: %v", t)
+	common.Debug("PostFilterName: %v", filterName)
+
 	drawTaskTable(w, r)
+}
+
+func internalServerError(w http.ResponseWriter, err error) {
+	w.WriteHeader(http.StatusInternalServerError)
+	log.Printf("PostFilterName: internal error: %v", err)
 }

@@ -120,6 +120,36 @@ table #column-completed-status {
     cursor: pointer;
 }
 
+/* Date Range Filter styles */
+.filter-panel fieldset {
+    border: 1px solid #e0e0e0;
+    padding: 12px;
+    margin-right: 20px;
+    border-radius: 8px;
+}
+
+.filter-panel fieldset legend {
+    padding: 0 8px;
+    color: #666;
+}
+
+.filter-panel fieldset div {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.filter-panel fieldset input[type="date"] {
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.filter-panel fieldset label {
+    white-space: nowrap;
+}
+
 /* Modal styles */
 .modal {
     display: flex;
