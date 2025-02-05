@@ -11,7 +11,7 @@ import (
 	"github.com/inaryzen/priotasks/common"
 	"github.com/inaryzen/priotasks/consts"
 	"github.com/inaryzen/priotasks/models"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 type DbSQLite struct {
@@ -29,7 +29,7 @@ func (d *DbSQLite) Init() {
 	}
 	file := filepath.Join(dir, "db.sqlite")
 
-	db, err := sql.Open("sqlite3", file)
+	db, err := sql.Open("sqlite", file)
 	if err != nil {
 		log.Fatal(err)
 	}
