@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"log"
-
 	"net/http"
 
 	"github.com/inaryzen/priotasks/components"
@@ -95,6 +94,12 @@ func resolveTaskFromForm(r *http.Request) models.Task {
 		log.Printf("failed to parse Priority: %v: %v", formPriority, err)
 	}
 
+	formImpact := r.FormValue("modal-task-impact")
+	impact, err := models.StrToImpact(formImpact)
+	if err != nil {
+		log.Printf("failed to parse Impact: %v: %v", formImpact, err)
+	}
+
 	// Parse checkbox values - they will be "on" if checked, or empty if unchecked
 	wipValue := r.FormValue("task-wip") == "on"
 	plannedValue := r.FormValue("task-planned") == "on"
@@ -106,6 +111,7 @@ func resolveTaskFromForm(r *http.Request) models.Task {
 		Priority: prio,
 		Wip:      wipValue,
 		Planned:  plannedValue,
+		Impact:   impact,
 	}
 }
 

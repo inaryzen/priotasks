@@ -261,7 +261,8 @@ input[type="text"],
     gap: 10px;
 }
 
-.modal-content .modal-task-priority {
+.modal-content .modal-task-priority,
+.modal-content .modal-task-impact {
     font-family: "Consolas", "Courier New", Courier, "Lucida Console", monospace;
     color: #333;
     width: 20%;

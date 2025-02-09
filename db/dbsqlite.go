@@ -22,6 +22,11 @@ func NewDbSQLite() *DbSQLite {
 	return &DbSQLite{}
 }
 
+const (
+	TASK_COLUMNS     = "id, title, content, created, updated, completed, priority, wip, planned, impact"
+	SETTINGS_COLUMNS = "id, filter_completed, active_sort_column, active_sort_direction, completed_from, completed_to"
+)
+
 func (d *DbSQLite) Init() {
 	dir, err := common.ResolveAppDir()
 	if err != nil {
@@ -45,7 +50,8 @@ func (d *DbSQLite) Init() {
 			completed TEXT,
 			priority INTEGER,
 			wip INTEGER DEFAULT 0,
-			planned INTEGER DEFAULT 0
+			planned INTEGER DEFAULT 0,
+			impact INTEGER DEFAULT 2
 		);
 		CREATE TABLE IF NOT EXISTS settings (
 			id TEXT PRIMARY KEY,
@@ -64,6 +70,7 @@ func (d *DbSQLite) Init() {
 	d.addSettingsCompletedTo()
 	d.addTasksWipColumn()
 	d.addTasksPlannedColumn()
+	d.addTasksImpactColumn()
 }
 
 func (d *DbSQLite) columnExists(tableName, columnName string) bool {
@@ -127,6 +134,15 @@ func (d *DbSQLite) addTasksPlannedColumn() {
 	}
 }
 
+func (d *DbSQLite) addTasksImpactColumn() {
+	if !d.columnExists("tasks", "impact") {
+		_, err := d.instance.Exec("ALTER TABLE tasks ADD COLUMN impact INTEGER DEFAULT 2")
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func (d *DbSQLite) Close() {
 	common.Debug("closing db...")
 	d.instance.Close()
@@ -137,7 +153,8 @@ func (d *DbSQLite) scanNextTask(rows *sql.Rows) (models.Task, error) {
 	var created, updated, completed string
 	var wip, planned int
 
-	err := rows.Scan(&task.Id, &task.Title, &task.Content, &created, &updated, &completed, &task.Priority, &wip, &planned)
+	err := rows.Scan(&task.Id, &task.Title, &task.Content, &created, &updated, &completed,
+		&task.Priority, &wip, &planned, &task.Impact)
 	if err != nil {
 		return models.EMPTY_TASK, err
 	}
@@ -164,7 +181,7 @@ func (d *DbSQLite) scanNextTask(rows *sql.Rows) (models.Task, error) {
 }
 
 func (d *DbSQLite) Tasks() (result []models.Task, err error) {
-	rows, err := d.instance.Query("SELECT id, title, content, created, updated, completed, priority, wip, planned FROM tasks")
+	rows, err := d.instance.Query("SELECT " + TASK_COLUMNS + " FROM tasks")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch records: %w", err)
 	}
@@ -181,7 +198,7 @@ func (d *DbSQLite) Tasks() (result []models.Task, err error) {
 }
 
 func (d *DbSQLite) FindTask(taskId string) (models.Task, error) {
-	rows, err := d.instance.Query("SELECT id, title, content, created, updated, completed, priority, wip, planned FROM tasks WHERE id = ?", taskId)
+	rows, err := d.instance.Query("SELECT "+TASK_COLUMNS+" FROM tasks WHERE id = ?", taskId)
 	if err != nil {
 		return models.EMPTY_TASK, fmt.Errorf("failed to query task: %s: %w", taskId, err)
 	}
@@ -217,9 +234,9 @@ func (d *DbSQLite) DeleteAllTasks() error {
 }
 
 func (d *DbSQLite) SaveTask(task models.Task) error {
-	_, err := d.instance.Exec(`
-		INSERT INTO tasks (id, title, content, created, updated, completed, priority, wip, planned)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	_, err := d.instance.Exec(
+		"INSERT INTO tasks ("+TASK_COLUMNS+") "+
+			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			title=excluded.title,
 			content=excluded.content,
@@ -228,7 +245,8 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 			completed=excluded.completed,
 			priority=excluded.priority,
 			wip=excluded.wip,
-			planned=excluded.planned
+			planned=excluded.planned,
+			impact=excluded.impact
 	`,
 		task.Id,
 		task.Title,
@@ -239,6 +257,7 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 		task.Priority,
 		task.Wip,
 		task.Planned,
+		task.Impact,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to save task: %v: %w", task, err)
@@ -250,12 +269,7 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	var settings models.Settings
 	var completedFrom, completedTo string
 
-	row := d.instance.QueryRow(`
-        SELECT id, filter_completed, active_sort_column, active_sort_direction, 
-               completed_from, completed_to 
-        FROM settings 
-        WHERE id = ?`, settingsId)
-
+	row := d.instance.QueryRow("SELECT "+SETTINGS_COLUMNS+" FROM settings WHERE id = ?", settingsId)
 	err := row.Scan(
 		&settings.Id,
 		&settings.TasksQuery.FilterCompleted,
@@ -291,16 +305,9 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 }
 
 func (d *DbSQLite) SaveSettings(s models.Settings) error {
-	sqlQuery := `
-        INSERT INTO settings (
-            id, 
-            filter_completed, 
-            active_sort_column, 
-            active_sort_direction,
-            completed_from,
-            completed_to
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
+	sqlQuery :=
+		"INSERT INTO settings (" + SETTINGS_COLUMNS + ") " +
+			`VALUES (?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             filter_completed=excluded.filter_completed,
             active_sort_column=excluded.active_sort_column,
@@ -336,7 +343,7 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 
 func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 	var args []interface{}
-	sqlQuery := "SELECT id, title, content, created, updated, completed, priority, wip, planned FROM tasks WHERE 1=1"
+	sqlQuery := "SELECT " + TASK_COLUMNS + " FROM tasks WHERE 1=1"
 
 	common.Debug("FindTasks: query: %v", query)
 

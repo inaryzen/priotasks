@@ -9,6 +9,7 @@ import (
 
 var EMPTY_TASK = Task{
 	Priority: PriorityMedium,
+	Impact:   ImpactModerate,
 }
 
 var NOT_COMPLETED time.Time = time.Time{}
@@ -48,6 +49,42 @@ func (p TaskPriority) ToStr() string {
 	}
 }
 
+type TaskImpact int
+
+const (
+	ImpactSlight TaskImpact = iota
+	ImpactLow
+	ImpactModerate
+	ImpactConsiderable
+	ImpactHigh
+)
+
+func StrToImpact(a string) (TaskImpact, error) {
+	val, err := strconv.Atoi(a)
+	if err != nil {
+		return ImpactModerate, err
+	} else {
+		return TaskImpact(val), nil
+	}
+}
+
+func (i TaskImpact) ToHumanString() string {
+	switch i {
+	case ImpactHigh:
+		return "💥 High"
+	case ImpactConsiderable:
+		return "⚡ Considerable"
+	case ImpactModerate:
+		return "💫 Moderate"
+	case ImpactLow:
+		return "🌱 Low"
+	case ImpactSlight:
+		return "💭 Slight"
+	default:
+		return "Unknown"
+	}
+}
+
 type Task struct {
 	Id        string
 	Title     string
@@ -58,6 +95,7 @@ type Task struct {
 	Priority  TaskPriority
 	Wip       bool
 	Planned   bool
+	Impact    TaskImpact
 }
 
 func titleFromContent(content string) string {
@@ -83,6 +121,7 @@ func Create(prototype Task) Task {
 		Priority:  prototype.Priority,
 		Wip:       prototype.Wip,
 		Planned:   prototype.Planned,
+		Impact:    prototype.Impact,
 	}
 }
 
@@ -101,6 +140,7 @@ func (c Task) Update(change Task) Task {
 		Priority:  change.Priority,
 		Wip:       change.Wip,
 		Planned:   change.Planned,
+		Impact:    change.Impact,
 	}
 }
 

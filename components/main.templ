@@ -13,8 +13,9 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 			<col style="width: 60px;"/>
 			<col style="width: 500px;"/>
 			<col style="width: 140px;"/>
-			<col style="width: 60px;"/>   // New column for Wip
-			<col style="width: 60px;"/>   // New column for Planned
+			<col style="width: 160px;"/> // New column for Impact
+			<col style="width: 60px;"/> // New column for Wip
+			<col style="width: 60px;"/> // New column for Planned
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
@@ -40,8 +41,9 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 						</button>
 					</form>
 				</th>
-					<th title="Work in Progress">WIP</th>
-					<th title="Planned">Plan</th>
+				<th title="Impact">Impact</th>
+				<th title="Work in Progress">WIP</th>
+				<th title="Planned">Plan</th>
 				<th class="sortable-header">
 					<form
 						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
@@ -93,6 +95,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 					</td>
 					<td id="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
 					<td id="column-priority">{ c.Priority.ToStr() }</td>
+					<td id="column-impact">{ c.Impact.ToHumanString() }</td>
 					<td id="column-wip" class="status-column">
 						if c.Wip {
 							<span title="Work in Progress">🏗️</span>
@@ -159,9 +162,9 @@ templ TasksView(cards []models.Task, st models.Settings) {
 									type="date"
 									id={ consts.FILTER_COMPLETED_FROM }
 									name={ consts.FILTER_COMPLETED_FROM }
-									value={st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT)}
+									value={ st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT) }
 									hx-trigger="change"
-									hx-post={ "/filter/" + consts.FILTER_COMPLETED_FROM}
+									hx-post={ "/filter/" + consts.FILTER_COMPLETED_FROM }
 									hx-target="#cards-table"
 									hx-swap="innerHTML"
 								/>
@@ -172,9 +175,9 @@ templ TasksView(cards []models.Task, st models.Settings) {
 									type="date"
 									id={ consts.FILTER_COMPLETED_TO }
 									name={ consts.FILTER_COMPLETED_TO }
-									value={st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT)}
+									value={ st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT) }
 									hx-trigger="change"
-									hx-post={ "/filter/" + consts.FILTER_COMPLETED_TO}
+									hx-post={ "/filter/" + consts.FILTER_COMPLETED_TO }
 									hx-target="#cards-table"
 									hx-swap="innerHTML"
 								/>
@@ -189,7 +192,7 @@ templ TasksView(cards []models.Task, st models.Settings) {
 									id={ consts.COMPLETED_FILTER_NAME }
 									name={ consts.COMPLETED_FILTER_NAME }
 									hx-trigger="change"
-									hx-post={ "/filter/" + consts.COMPLETED_FILTER_NAME}
+									hx-post={ "/filter/" + consts.COMPLETED_FILTER_NAME }
 									hx-target="#cards-table"
 									hx-swap="innerHTML"
 								/>
@@ -238,12 +241,44 @@ templ ModalTaskView(card models.Task) {
 							}
 						>{ models.PriorityLow.ToStr() }</option>
 					</select>
+					<select id="modal-task-impact" name="modal-task-impact" class="modal-task-impact">
+						<option
+							value="4"
+							if card.Impact == models.ImpactHigh {
+								selected
+							}
+						>{ models.ImpactHigh.ToHumanString() }</option>
+						<option
+							value="3"
+							if card.Impact == models.ImpactConsiderable {
+								selected
+							}
+						>{ models.ImpactConsiderable.ToHumanString() }</option>
+						<option
+							value="2"
+							if card.Impact == models.ImpactModerate {
+								selected
+							}
+						>{ models.ImpactModerate.ToHumanString() }</option>
+						<option
+							value="1"
+							if card.Impact == models.ImpactLow {
+								selected
+							}
+						>{ models.ImpactLow.ToHumanString() }</option>
+						<option
+							value="0"
+							if card.Impact == models.ImpactSlight {
+								selected
+							}
+						>{ models.ImpactSlight.ToHumanString() }</option>
+					</select>
 				</div>
 				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
 				<div class="task-flags">
 					<label class="checkbox-label">
-						<input 
-							type="checkbox" 
+						<input
+							type="checkbox"
 							name="task-wip"
 							if card.Wip {
 								checked
@@ -252,8 +287,8 @@ templ ModalTaskView(card models.Task) {
 						Work in Progress
 					</label>
 					<label class="checkbox-label">
-						<input 
-							type="checkbox" 
+						<input
+							type="checkbox"
 							name="task-planned"
 							if card.Planned {
 								checked
