@@ -71,15 +71,15 @@ func StrToImpact(a string) (TaskImpact, error) {
 func (i TaskImpact) ToHumanString() string {
 	switch i {
 	case ImpactHigh:
-		return "💥 High"
+		return "XL - 🌟🌟🌟🌟"
 	case ImpactConsiderable:
-		return "⚡ Considerable"
+		return "L - 🌟🌟🌟"
 	case ImpactModerate:
-		return "💫 Moderate"
+		return "M - 🌟🌟"
 	case ImpactLow:
-		return "🌱 Low"
+		return "S - 🌱"
 	case ImpactSlight:
-		return "💭 Slight"
+		return "XS"
 	default:
 		return "Unknown"
 	}
