@@ -13,6 +13,8 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 			<col style="width: 60px;"/>
 			<col style="width: 500px;"/>
 			<col style="width: 140px;"/>
+			<col style="width: 60px;"/>   // New column for Wip
+			<col style="width: 60px;"/>   // New column for Planned
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
@@ -38,6 +40,8 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 						</button>
 					</form>
 				</th>
+					<th title="Work in Progress">WIP</th>
+					<th title="Planned">Plan</th>
 				<th class="sortable-header">
 					<form
 						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
@@ -89,6 +93,16 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 					</td>
 					<td id="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
 					<td id="column-priority">{ c.Priority.ToStr() }</td>
+					<td id="column-wip" class="status-column">
+						if c.Wip {
+							<span title="Work in Progress">🏗️</span>
+						}
+					</td>
+					<td id="column-planned" class="status-column">
+						if c.Planned {
+							<span title="Planned">📅</span>
+						}
+					</td>
 					<td id="column-completed">
 						if c.IsCompleted() {
 							{ c.Completed.Format("2006-01-02 15:04:05") }
@@ -226,6 +240,28 @@ templ ModalTaskView(card models.Task) {
 					</select>
 				</div>
 				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
+				<div class="task-flags">
+					<label class="checkbox-label">
+						<input 
+							type="checkbox" 
+							name="task-wip"
+							if card.Wip {
+								checked
+							}
+						/>
+						Work in Progress
+					</label>
+					<label class="checkbox-label">
+						<input 
+							type="checkbox" 
+							name="task-planned"
+							if card.Planned {
+								checked
+							}
+						/>
+						Planned
+					</label>
+				</div>
 				<div class="form-buttons">
 					<button type="submit" class="btn-save">Save</button>
 					<button type="button" class="btn-cancel" onclick="closeModal('modal-card')">Cancel</button>

@@ -56,6 +56,8 @@ type Task struct {
 	Updated   time.Time
 	Completed time.Time
 	Priority  TaskPriority
+	Wip       bool
+	Planned   bool
 }
 
 func titleFromContent(content string) string {
@@ -79,6 +81,8 @@ func Create(prototype Task) Task {
 		Updated:   time.Now(),
 		Completed: NOT_COMPLETED,
 		Priority:  prototype.Priority,
+		Wip:       prototype.Wip,
+		Planned:   prototype.Planned,
 	}
 }
 
@@ -95,6 +99,8 @@ func (c Task) Update(change Task) Task {
 		Updated:   time.Now(),
 		Completed: c.Completed,
 		Priority:  change.Priority,
+		Wip:       change.Wip,
+		Planned:   change.Planned,
 	}
 }
 

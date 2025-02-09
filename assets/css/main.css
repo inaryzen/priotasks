@@ -271,15 +271,33 @@ input[type="text"],
     font-size: 1em;
     margin-bottom: 10px;
     background-color: #f4f4f4;
-    /* -webkit-appearance: none;
-    -moz-appearance: none; */
     appearance: none;
-    /* background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg
-xmlns%3d%27http%3a//www.w3.org/2000/svg%27 viewBox%3d%270 0 4 5%27%3e%3cpath
-fill%3d%27%23000%27 d%3d%27M2 0L0 2h4L2 0zM0 3h4l-2 2L0 3z%27/%3e%3c/svg%3e"); */
     background-repeat: no-repeat;
     background-position: right 10px top 50%;
     background-size: 10px;
+}
+
+.task-flags {
+    margin: 15px 0;
+    display: flex;
+    gap: 20px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;  /* Match filter panel font size */
+    color: #333;      /* Match filter panel color */
+    font-weight: normal;  /* Remove bold font weight */
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
 
 /* Table */
@@ -330,4 +348,13 @@ th.sortable-header:hover {
 .sortable.sorted-desc::after {
     content: "\25BC";
     color: #000000;
+}
+
+.status-column {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.status-column span {
+    cursor: default;
 }

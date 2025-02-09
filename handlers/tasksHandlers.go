@@ -95,11 +95,17 @@ func resolveTaskFromForm(r *http.Request) models.Task {
 		log.Printf("failed to parse Priority: %v: %v", formPriority, err)
 	}
 
+	// Parse checkbox values - they will be "on" if checked, or empty if unchecked
+	wipValue := r.FormValue("task-wip") == "on"
+	plannedValue := r.FormValue("task-planned") == "on"
+
 	return models.Task{
 		Id:       r.FormValue("card-id"),
 		Content:  r.FormValue("card-text"),
 		Title:    r.FormValue("card-title"),
 		Priority: prio,
+		Wip:      wipValue,
+		Planned:  plannedValue,
 	}
 }
 

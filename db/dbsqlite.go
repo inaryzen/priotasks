@@ -43,7 +43,9 @@ func (d *DbSQLite) Init() {
 			created TEXT,
 			updated TEXT,
 			completed TEXT,
-			priority INTEGER
+			priority INTEGER,
+			wip INTEGER DEFAULT 0,
+			planned INTEGER DEFAULT 0
 		);
 		CREATE TABLE IF NOT EXISTS settings (
 			id TEXT PRIMARY KEY,
@@ -133,11 +135,15 @@ func (d *DbSQLite) Close() {
 func (d *DbSQLite) scanNextTask(rows *sql.Rows) (models.Task, error) {
 	var task models.Task
 	var created, updated, completed string
+	var wip, planned int
 
-	err := rows.Scan(&task.Id, &task.Title, &task.Content, &created, &updated, &completed, &task.Priority)
+	err := rows.Scan(&task.Id, &task.Title, &task.Content, &created, &updated, &completed, &task.Priority, &wip, &planned)
 	if err != nil {
 		return models.EMPTY_TASK, err
 	}
+
+	task.Wip = wip == 1
+	task.Planned = planned == 1
 
 	task.Created, err = time.Parse(consts.DEFAULT_TIME_FORMAT, created)
 	if err != nil {
@@ -158,7 +164,7 @@ func (d *DbSQLite) scanNextTask(rows *sql.Rows) (models.Task, error) {
 }
 
 func (d *DbSQLite) Tasks() (result []models.Task, err error) {
-	rows, err := d.instance.Query("SELECT id, title, content, created, updated, completed, priority FROM tasks")
+	rows, err := d.instance.Query("SELECT id, title, content, created, updated, completed, priority, wip, planned FROM tasks")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch records: %w", err)
 	}
@@ -175,7 +181,7 @@ func (d *DbSQLite) Tasks() (result []models.Task, err error) {
 }
 
 func (d *DbSQLite) FindTask(taskId string) (models.Task, error) {
-	rows, err := d.instance.Query("SELECT id, title, content, created, updated, completed, priority FROM tasks WHERE id = ?", taskId)
+	rows, err := d.instance.Query("SELECT id, title, content, created, updated, completed, priority, wip, planned FROM tasks WHERE id = ?", taskId)
 	if err != nil {
 		return models.EMPTY_TASK, fmt.Errorf("failed to query task: %s: %w", taskId, err)
 	}
@@ -212,15 +218,17 @@ func (d *DbSQLite) DeleteAllTasks() error {
 
 func (d *DbSQLite) SaveTask(task models.Task) error {
 	_, err := d.instance.Exec(`
-		INSERT INTO tasks (id, title, content, created, updated, completed, priority)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO tasks (id, title, content, created, updated, completed, priority, wip, planned)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			title=excluded.title,
 			content=excluded.content,
 			created=excluded.created,
 			updated=excluded.updated,
 			completed=excluded.completed,
-			priority=excluded.priority
+			priority=excluded.priority,
+			wip=excluded.wip,
+			planned=excluded.planned
 	`,
 		task.Id,
 		task.Title,
@@ -229,6 +237,8 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 		task.Updated.Format(consts.DEFAULT_TIME_FORMAT),
 		task.Completed.Format(consts.DEFAULT_TIME_FORMAT),
 		task.Priority,
+		task.Wip,
+		task.Planned,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to save task: %v: %w", task, err)
@@ -326,7 +336,7 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 
 func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 	var args []interface{}
-	sqlQuery := "SELECT id, title, content, created, updated, completed, priority FROM tasks WHERE 1=1"
+	sqlQuery := "SELECT id, title, content, created, updated, completed, priority, wip, planned FROM tasks WHERE 1=1"
 
 	common.Debug("FindTasks: query: %v", query)
 
