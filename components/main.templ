@@ -130,6 +130,57 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 	</table>
 }
 
+templ FilterPanel(st models.Settings) {
+    <div class="filter-panel">
+        <fieldset>
+            <legend>Completed</legend>
+            <div>
+                <label for="completed-from">
+                    <input
+                        type="date"
+                        id={ consts.FILTER_COMPLETED_FROM }
+                        name={ consts.FILTER_COMPLETED_FROM }
+                        value={ st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT) }
+                        hx-trigger="change"
+                        hx-post={ "/filter/" + consts.FILTER_COMPLETED_FROM }
+                        hx-target="#cards-table"
+                        hx-swap="innerHTML"
+                    />
+                    From:
+                </label>
+                <label for="completed-to">
+                    <input
+                        type="date"
+                        id={ consts.FILTER_COMPLETED_TO }
+                        name={ consts.FILTER_COMPLETED_TO }
+                        value={ st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT) }
+                        hx-trigger="change"
+                        hx-post={ "/filter/" + consts.FILTER_COMPLETED_TO }
+                        hx-target="#cards-table"
+                        hx-swap="innerHTML"
+                    />
+                    To:
+                </label>
+                <label>
+                    <input
+                        if st.TasksQuery.FilterCompleted {
+                            checked
+                        }
+                        type="checkbox"
+                        id={ consts.COMPLETED_FILTER_NAME }
+                        name={ consts.COMPLETED_FILTER_NAME }
+                        hx-trigger="change"
+                        hx-post={ "/filter/" + consts.COMPLETED_FILTER_NAME }
+                        hx-target="#cards-table"
+                        hx-swap="innerHTML"
+                    />
+                    Hide
+                </label>
+            </div>
+        </fieldset>
+    </div>
+}
+
 templ TasksView(cards []models.Task, st models.Settings) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -153,54 +204,7 @@ templ TasksView(cards []models.Task, st models.Settings) {
 						</ul>
 					</nav>
 				</header>
-				<div class="filter-panel">
-					<fieldset>
-						<legend>Completed</legend>
-						<div>
-							<label for="completed-from">
-								<input
-									type="date"
-									id={ consts.FILTER_COMPLETED_FROM }
-									name={ consts.FILTER_COMPLETED_FROM }
-									value={ st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT) }
-									hx-trigger="change"
-									hx-post={ "/filter/" + consts.FILTER_COMPLETED_FROM }
-									hx-target="#cards-table"
-									hx-swap="innerHTML"
-								/>
-								From:
-							</label>
-							<label for="completed-to">
-								<input
-									type="date"
-									id={ consts.FILTER_COMPLETED_TO }
-									name={ consts.FILTER_COMPLETED_TO }
-									value={ st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT) }
-									hx-trigger="change"
-									hx-post={ "/filter/" + consts.FILTER_COMPLETED_TO }
-									hx-target="#cards-table"
-									hx-swap="innerHTML"
-								/>
-								To:
-							</label>
-							<label>
-								<input
-									if st.TasksQuery.FilterCompleted {
-										checked
-									}
-									type="checkbox"
-									id={ consts.COMPLETED_FILTER_NAME }
-									name={ consts.COMPLETED_FILTER_NAME }
-									hx-trigger="change"
-									hx-post={ "/filter/" + consts.COMPLETED_FILTER_NAME }
-									hx-target="#cards-table"
-									hx-swap="innerHTML"
-								/>
-								Hide
-							</label>
-						</div>
-					</fieldset>
-				</div>
+				@FilterPanel(st)
 				@TaskTable(cards, st)
 			</div>
 			<div id="modal-card"></div>
