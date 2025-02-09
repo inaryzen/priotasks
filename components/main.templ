@@ -136,6 +136,7 @@ templ FilterPanel(st models.Settings) {
             <legend>Completed</legend>
             <div>
                 <label for="completed-from">
+					From:
                     <input
                         type="date"
                         id={ consts.FILTER_COMPLETED_FROM }
@@ -146,9 +147,9 @@ templ FilterPanel(st models.Settings) {
                         hx-target="#cards-table"
                         hx-swap="innerHTML"
                     />
-                    From:
                 </label>
                 <label for="completed-to">
+				    To:
                     <input
                         type="date"
                         id={ consts.FILTER_COMPLETED_TO }
@@ -159,7 +160,6 @@ templ FilterPanel(st models.Settings) {
                         hx-target="#cards-table"
                         hx-swap="innerHTML"
                     />
-                    To:
                 </label>
                 <label>
                     <input
