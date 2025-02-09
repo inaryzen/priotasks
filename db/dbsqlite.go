@@ -60,13 +60,15 @@ func (d *DbSQLite) Init() {
 
 	d.addSettingsCompletedFrom()
 	d.addSettingsCompletedTo()
+	d.addTasksWipColumn()
+	d.addTasksPlannedColumn()
 }
 
-func (d *DbSQLite) columnExists(tableName, columnName string) (bool, error) {
+func (d *DbSQLite) columnExists(tableName, columnName string) bool {
 	query := fmt.Sprintf("PRAGMA table_info(%s);", tableName)
 	rows, err := d.instance.Query(query)
 	if err != nil {
-		return false, err
+		panic(err)
 	}
 	defer rows.Close()
 
@@ -77,24 +79,28 @@ func (d *DbSQLite) columnExists(tableName, columnName string) (bool, error) {
 		var primaryKey int
 
 		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dfltValue, &primaryKey); err != nil {
-			return false, err
+			panic(err)
 		}
 
 		if name == columnName {
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
+}
+
+func (d *DbSQLite) addTasksWipColumn() {
+	if !d.columnExists("tasks", "wip") {
+		_, err := d.instance.Exec("ALTER TABLE tasks ADD COLUMN wip INTEGER DEFAULT 0")
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func (d *DbSQLite) addSettingsCompletedFrom() {
-	exists, err := d.columnExists("settings", "completed_from")
-	if err != nil {
-		panic(err)
-	}
-
-	if !exists {
-		_, err = d.instance.Exec("ALTER TABLE settings ADD COLUMN completed_from TEXT DEFAULT '" + models.NOT_COMPLETED.Format(consts.DEFAULT_DATE_FORMAT) + "'")
+	if !d.columnExists("settings", "completed_from") {
+		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN completed_from TEXT DEFAULT '" + models.NOT_COMPLETED.Format(consts.DEFAULT_DATE_FORMAT) + "'")
 		if err != nil {
 			panic(err)
 		}
@@ -102,13 +108,17 @@ func (d *DbSQLite) addSettingsCompletedFrom() {
 }
 
 func (d *DbSQLite) addSettingsCompletedTo() {
-	exists, err := d.columnExists("settings", "completed_to")
-	if err != nil {
-		panic(err)
+	if !d.columnExists("settings", "completed_to") {
+		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN completed_to TEXT DEFAULT '" + models.NOT_COMPLETED.Format(consts.DEFAULT_DATE_FORMAT) + "'")
+		if err != nil {
+			panic(err)
+		}
 	}
+}
 
-	if !exists {
-		_, err = d.instance.Exec("ALTER TABLE settings ADD COLUMN completed_to TEXT DEFAULT '" + models.NOT_COMPLETED.Format(consts.DEFAULT_DATE_FORMAT) + "'")
+func (d *DbSQLite) addTasksPlannedColumn() {
+	if !d.columnExists("tasks", "planned") {
+		_, err := d.instance.Exec("ALTER TABLE tasks ADD COLUMN planned INTEGER DEFAULT 0")
 		if err != nil {
 			panic(err)
 		}
