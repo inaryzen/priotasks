@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/inaryzen/priotasks/components"
 	"github.com/inaryzen/priotasks/consts"
@@ -103,15 +104,22 @@ func resolveTaskFromForm(r *http.Request) models.Task {
 	// Parse checkbox values - they will be "on" if checked, or empty if unchecked
 	wipValue := r.FormValue("task-wip") == "on"
 	plannedValue := r.FormValue("task-planned") == "on"
+	var completed time.Time
+	if r.FormValue("task-completed") == "on" {
+		completed = time.Now()
+	} else {
+		completed = models.NOT_COMPLETED
+	}
 
 	return models.Task{
-		Id:       r.FormValue("card-id"),
-		Content:  r.FormValue("card-text"),
-		Title:    r.FormValue("card-title"),
-		Priority: prio,
-		Wip:      wipValue,
-		Planned:  plannedValue,
-		Impact:   impact,
+		Id:        r.FormValue("card-id"),
+		Content:   r.FormValue("card-text"),
+		Title:     r.FormValue("card-title"),
+		Priority:  prio,
+		Wip:       wipValue,
+		Planned:   plannedValue,
+		Impact:    impact,
+		Completed: completed,
 	}
 }
 

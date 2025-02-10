@@ -117,7 +117,7 @@ func Create(prototype Task) Task {
 		Content:   prototype.Content,
 		Created:   time.Now(),
 		Updated:   time.Now(),
-		Completed: NOT_COMPLETED,
+		Completed: prototype.Completed,
 		Priority:  prototype.Priority,
 		Wip:       prototype.Wip,
 		Planned:   prototype.Planned,
@@ -130,13 +130,18 @@ func (c Task) Update(change Task) Task {
 		change.Title = titleFromContent(change.Content)
 	}
 
+	var completed time.Time
+	if !c.IsCompleted() || !change.IsCompleted() {
+		completed = change.Completed
+	}
+
 	return Task{
 		Id:        c.Id,
 		Title:     change.Title,
 		Content:   change.Content,
 		Created:   c.Created,
 		Updated:   time.Now(),
-		Completed: c.Completed,
+		Completed: completed,
 		Priority:  change.Priority,
 		Wip:       change.Wip,
 		Planned:   change.Planned,
