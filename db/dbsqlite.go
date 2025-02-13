@@ -24,7 +24,7 @@ func NewDbSQLite() *DbSQLite {
 
 const (
 	TASK_COLUMNS     = "id, title, content, created, updated, completed, priority, wip, planned, impact"
-	SETTINGS_COLUMNS = "id, filter_completed, active_sort_column, active_sort_direction, completed_from, completed_to"
+	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to"
 )
 
 func (d *DbSQLite) Init() {
@@ -56,6 +56,7 @@ func (d *DbSQLite) Init() {
 		CREATE TABLE IF NOT EXISTS settings (
 			id TEXT PRIMARY KEY,
 			filter_completed BOOLEAN,
+			filter_incompleted BOOLEAN,
 			active_sort_column INTEGER,
 			active_sort_direction INTEGER,
 			completed_from TEXT,
@@ -71,6 +72,7 @@ func (d *DbSQLite) Init() {
 	d.addTasksWipColumn()
 	d.addTasksPlannedColumn()
 	d.addTasksImpactColumn()
+	d.addSettingsFilterIncomplete()
 }
 
 func (d *DbSQLite) columnExists(tableName, columnName string) bool {
@@ -137,6 +139,15 @@ func (d *DbSQLite) addTasksPlannedColumn() {
 func (d *DbSQLite) addTasksImpactColumn() {
 	if !d.columnExists("tasks", "impact") {
 		_, err := d.instance.Exec("ALTER TABLE tasks ADD COLUMN impact INTEGER DEFAULT 2")
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func (d *DbSQLite) addSettingsFilterIncomplete() {
+	if !d.columnExists("settings", "filter_incompleted") {
+		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN filter_incompleted BOOLEAN DEFAULT 0")
 		if err != nil {
 			panic(err)
 		}
@@ -273,6 +284,7 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	err := row.Scan(
 		&settings.Id,
 		&settings.TasksQuery.FilterCompleted,
+		&settings.TasksQuery.FilterIncompleted,
 		&settings.TasksQuery.SortColumn,
 		&settings.TasksQuery.SortDirection,
 		&completedFrom,
@@ -307,9 +319,10 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 func (d *DbSQLite) SaveSettings(s models.Settings) error {
 	sqlQuery :=
 		"INSERT INTO settings (" + SETTINGS_COLUMNS + ") " +
-			`VALUES (?, ?, ?, ?, ?, ?)
+			`VALUES (?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             filter_completed=excluded.filter_completed,
+            filter_incompleted=excluded.filter_incompleted,
             active_sort_column=excluded.active_sort_column,
             active_sort_direction=excluded.active_sort_direction,
             completed_from=excluded.completed_from,
@@ -328,6 +341,7 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 	args := []interface{}{
 		s.Id,
 		s.TasksQuery.FilterCompleted,
+		s.TasksQuery.FilterIncompleted,
 		s.TasksQuery.SortColumn,
 		s.TasksQuery.SortDirection,
 		completedFrom,
@@ -356,11 +370,15 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 			sqlQuery += " AND (completed >= ? OR completed = ?)"
 			args = append(args, query.CompletedFrom.Format(consts.DEFAULT_TIME_FORMAT), models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT))
 		}
-
 		if !query.CompletedTo.IsZero() {
 			sqlQuery += " AND (completed <= ? OR completed = ?)"
 			args = append(args, query.CompletedTo.Format(consts.DEFAULT_TIME_FORMAT), models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT))
 		}
+	}
+	if query.FilterIncompleted {
+		sqlQuery += " AND completed != ?"
+		notCompleted := models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT)
+		args = append(args, notCompleted)
 	}
 
 	if query.SortColumn != models.ColumnUndefined {

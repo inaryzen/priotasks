@@ -23,13 +23,21 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 
 	filterName := r.PathValue("name")
 	switch filterName {
-	case consts.COMPLETED_FILTER_NAME:
-		filter := r.Form.Get(consts.COMPLETED_FILTER_NAME)
+	case consts.FILTER_NAME_HIDE_COMPLETED:
+		filter := r.Form.Get(consts.FILTER_NAME_HIDE_COMPLETED)
 		value := filter != ""
 		t.FilterCompleted = value
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Printf("PostFilterName: error updating filter completed: %v", err)
+			return
+		}
+	case consts.FILTER_NAME_HIDE_INCOMPLETED:
+		filter := r.Form.Get(consts.FILTER_NAME_HIDE_INCOMPLETED)
+		t.FilterIncompleted = filter != ""
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("PostFilterName: error updating %v: %v", consts.FILTER_NAME_HIDE_INCOMPLETED, err)
 			return
 		}
 	case consts.FILTER_COMPLETED_FROM:

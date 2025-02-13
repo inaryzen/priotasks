@@ -9,6 +9,8 @@ import (
 	"github.com/inaryzen/priotasks/consts"
 )
 
+// TODO: Test is broken as DB is not configured properly. Requires fixing.
+
 func TestPostFilterName(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -18,8 +20,8 @@ func TestPostFilterName(t *testing.T) {
 	}{
 		{
 			name:           "Set Completed Filter True",
-			filterName:     consts.COMPLETED_FILTER_NAME,
-			formData:       consts.COMPLETED_FILTER_NAME + "=true",
+			filterName:     consts.FILTER_NAME_HIDE_COMPLETED,
+			formData:       consts.FILTER_NAME_HIDE_COMPLETED + "=true",
 			expectedStatus: http.StatusOK,
 		},
 		{
@@ -45,6 +47,12 @@ func TestPostFilterName(t *testing.T) {
 			filterName:     "unknown-filter",
 			formData:       "value=test",
 			expectedStatus: http.StatusInternalServerError,
+		},
+		{
+			name:           "Set Incomplete Filter True",
+			filterName:     consts.FILTER_NAME_HIDE_INCOMPLETED,
+			formData:       consts.FILTER_NAME_HIDE_INCOMPLETED + "=true",
+			expectedStatus: http.StatusOK,
 		},
 	}
 

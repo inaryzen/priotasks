@@ -59,16 +59,17 @@ type Settings struct {
 }
 
 type TasksQuery struct {
-	FilterCompleted bool
-	CompletedFrom   time.Time
-	CompletedTo     time.Time
-	SortColumn      SortColumn
-	SortDirection   SortDirection
+	FilterCompleted   bool
+	FilterIncompleted bool
+	CompletedFrom     time.Time
+	CompletedTo       time.Time
+	SortColumn        SortColumn
+	SortDirection     SortDirection
 }
 
 func (t TasksQuery) String() string {
-	return fmt.Sprintf("FilterCompleted: %v, CompletedFrom: %v, CompletedTo: %v, SortColumn: %v, SortDirection: %v",
-		t.FilterCompleted, t.CompletedFrom, t.CompletedTo, t.SortColumn, t.SortDirection)
+	return fmt.Sprintf("FilterCompleted: %v, CompletedFrom: %v, CompletedTo: %v, SortColumn: %v, SortDirection: %v, FilterCompleted: %v",
+		t.FilterCompleted, t.CompletedFrom, t.CompletedTo, t.SortColumn, t.SortDirection, t.FilterIncompleted)
 }
 
 func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {

@@ -167,14 +167,29 @@ templ FilterPanel(st models.Settings) {
 							checked
 						}
 						type="checkbox"
-						id={ consts.COMPLETED_FILTER_NAME }
-						name={ consts.COMPLETED_FILTER_NAME }
+						id={ consts.FILTER_NAME_HIDE_COMPLETED }
+						name={ consts.FILTER_NAME_HIDE_COMPLETED }
 						hx-trigger="change"
-						hx-post={ "/filter/" + consts.COMPLETED_FILTER_NAME }
+						hx-post={ "/filter/" + consts.FILTER_NAME_HIDE_COMPLETED }
 						hx-target="#cards-table"
 						hx-swap="innerHTML"
 					/>
-					Hide
+					Hide Completed
+				</label>
+				<label>
+					<input
+						if st.TasksQuery.FilterCompleted {
+							checked
+						}
+						type="checkbox"
+						id={ consts.FILTER_NAME_HIDE_INCOMPLETED }
+						name={ consts.FILTER_NAME_HIDE_INCOMPLETED }
+						hx-trigger="change"
+						hx-post={ "/filter/" + consts.FILTER_NAME_HIDE_INCOMPLETED }
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					/>
+					Hide Incompleted
 				</label>
 			</div>
 		</fieldset>

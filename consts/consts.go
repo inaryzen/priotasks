@@ -1,6 +1,7 @@
 package consts
 
-const COMPLETED_FILTER_NAME = "completed-filter"
+const FILTER_NAME_HIDE_COMPLETED = "completed-filter"
+const FILTER_NAME_HIDE_INCOMPLETED = "filter-incompleted"
 const FILTER_COMPLETED_FROM = "filter-completed-from"
 const FILTER_COMPLETED_TO = "filter-completed-to"
 
