@@ -75,3 +75,13 @@ func (t TasksQuery) String() string {
 func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {
 	return s.TasksQuery.SortColumn == c && s.TasksQuery.SortDirection == d
 }
+
+func (s TasksQuery) Reset() TasksQuery {
+	s.FilterCompleted = true
+	s.FilterIncompleted = false
+	s.CompletedFrom = time.Now().AddDate(0, 0, -14)
+	s.CompletedTo = NOT_COMPLETED
+	s.SortColumn = Priority
+	s.SortDirection = Desc
+	return s
+}

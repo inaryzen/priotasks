@@ -98,6 +98,7 @@ func configureServerMux() {
 
 	// http.HandleFunc("POST /toggle-completed-filter", handlers.PostFilter)
 	http.HandleFunc("POST /filter/{name}", handlers.PostFilterName)
+	http.HandleFunc("POST /prepared-query/{name}", handlers.PostPreparedQuery)
 
 	http.HandleFunc("POST "+consts.URL_TOGGLE_SORT_TABLE, handlers.PostToggleSortTable)
 

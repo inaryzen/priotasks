@@ -160,6 +160,24 @@ func findSettingsOrWriteError(w http.ResponseWriter) (models.Settings, error) {
 }
 
 func GetTasks(w http.ResponseWriter, r *http.Request) {
+	drawTaskView(w, r)
+}
+
+func drawTaskViewBody(w http.ResponseWriter, r *http.Request) {
+	cards, err := findTasksOrWriteError(w)
+	if err != nil {
+		return
+	}
+
+	settings, err := findSettingsOrWriteError(w)
+	if err != nil {
+		return
+	}
+	body := components.TasksViewBody(cards, settings)
+	body.Render(r.Context(), w)
+}
+
+func drawTaskView(w http.ResponseWriter, r *http.Request) {
 	cards, err := findTasksOrWriteError(w)
 	if err != nil {
 		return

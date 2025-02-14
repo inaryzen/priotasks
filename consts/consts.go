@@ -1,17 +1,25 @@
 package consts
 
-const FILTER_NAME_HIDE_COMPLETED = "completed-filter"
-const FILTER_NAME_HIDE_INCOMPLETED = "filter-incompleted"
-const FILTER_COMPLETED_FROM = "filter-completed-from"
-const FILTER_COMPLETED_TO = "filter-completed-to"
+const (
+	FILTER_NAME_HIDE_COMPLETED   = "completed-filter"
+	FILTER_NAME_HIDE_INCOMPLETED = "filter-incompleted"
+	FILTER_COMPLETED_FROM        = "filter-completed-from"
+	FILTER_COMPLETED_TO          = "filter-completed-to"
 
-const COMPLETED_SORT_NAME = "completed-sort"
-const SORT_COLUMN_NAME = "sort-column"
-const SORT_DIRECTION_NAME = "sort-direction"
+	PREPARED_QUERY_RESET                    = "prepared-query-clear"
+	PREPARED_QUERY_COMPLETED_TODAY          = "prepared-query-completed-today"
+	PREPARED_QUERY_COMPLETED_THIS_WEEK      = "prepared-query-completed-this-week"
+	PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS = "prepared-query-completed-last-two-weeks"
+	PREPARED_QUERY_COMPLETED_LAST_WEEK      = "prepared-query-completed-last-week"
 
-const URL_TOGGLE_SORT_TABLE = "/toggle-sort-table"
-const URL_TASKS = "/tasks"
-const URL_TASKS_ID = "/tasks/{id}"
+	COMPLETED_SORT_NAME = "completed-sort"
+	SORT_COLUMN_NAME    = "sort-column"
+	SORT_DIRECTION_NAME = "sort-direction"
 
-const DEFAULT_TIME_FORMAT = "2006-01-02 15:04:05"
-const DEFAULT_DATE_FORMAT = "2006-01-02"
+	URL_TOGGLE_SORT_TABLE = "/toggle-sort-table"
+	URL_TASKS             = "/tasks"
+	URL_TASKS_ID          = "/tasks/{id}"
+
+	DEFAULT_TIME_FORMAT = "2006-01-02 15:04:05"
+	DEFAULT_DATE_FORMAT = "2006-01-02"
+)

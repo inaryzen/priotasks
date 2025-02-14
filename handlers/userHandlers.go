@@ -11,6 +11,15 @@ import (
 	"github.com/inaryzen/priotasks/services"
 )
 
+func PostPreparedQuery(w http.ResponseWriter, r *http.Request) {
+	preparedQueryName := r.PathValue("name")
+	err := services.ApplyPreparedQuery(preparedQueryName)
+	if err != nil {
+		internalServerError(w, err)
+	}
+	drawTaskViewBody(w, r)
+}
+
 func PostFilterName(w http.ResponseWriter, r *http.Request) {
 	s, err := services.FindUserSettings()
 	t := s.TasksQuery
