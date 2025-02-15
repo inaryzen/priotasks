@@ -7,6 +7,24 @@ import (
 	"strconv"
 )
 
+templ SortableHeader(st models.Settings, sortColumn models.SortColumn) {
+	<th class="sortable-header">
+		<form
+			hx-post={ consts.URL_TOGGLE_SORT_TABLE }
+			hx-target="#cards-table"
+			hx-swap="innerHTML"
+		>
+			<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(sortColumn)) }/>
+			if st.TasksQuery.SortColumn == sortColumn {
+				<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.TasksQuery.SortDirection)) }/>
+			}
+			<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(sortColumn, models.Desc)), templ.KV("sorted-asc", st.IsSorted(sortColumn, models.Asc)) }>
+				{ sortColumn.ToHumanString() }
+			</button>
+		</form>
+	</th>
+}
+
 templ TaskTable(cards []models.Task, st models.Settings) {
 	<table id="cards-table">
 		<colgroup>
@@ -41,9 +59,9 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 						</button>
 					</form>
 				</th>
-				<th title="Impact">Impact</th>
-				<th title="Work in Progress">WIP</th>
-				<th title="Planned">Plan</th>
+				@SortableHeader(st, models.ColumnImpact)
+				@SortableHeader(st, models.ColumnWip)
+				@SortableHeader(st, models.ColumnPlanned)
 				<th class="sortable-header">
 					<form
 						hx-post={ consts.URL_TOGGLE_SORT_TABLE }

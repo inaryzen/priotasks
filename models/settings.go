@@ -15,7 +15,14 @@ const (
 	Created
 	Updated
 	Priority
+	ColumnImpact
+	ColumnWip
+	ColumnPlanned
 )
+
+func (sc SortColumn) ToHumanString() string {
+	return []string{"Undefined", "Completed", "Title", "Created", "Updated", "Priority", "Impact", "WIP", "Plan"}[sc]
+}
 
 func ColumnFromString(str string) (result SortColumn) {
 	num, err := strconv.Atoi(str)

@@ -388,7 +388,7 @@ th.sortable-header:hover {
     color: #e0e0e0;
 }
 
-sortabl.sorted-desc::after {
+.sortable.sorted-desc::after {
     content: "\25BC";
     color: #e0e0e0;
 }

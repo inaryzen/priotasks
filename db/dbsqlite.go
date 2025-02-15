@@ -390,6 +390,12 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 			sqlQuery += "created"
 		case models.Priority:
 			sqlQuery += "priority"
+		case models.ColumnImpact:
+			sqlQuery += "impact"
+		case models.ColumnWip:
+			sqlQuery += "wip"
+		case models.ColumnPlanned:
+			sqlQuery += "planned"
 		default:
 			sqlQuery += "created" // default sort
 		}
