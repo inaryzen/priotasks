@@ -44,54 +44,12 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 			<tr>
 				<th>Done</th>
 				<th>Title</th>
-				<th class="sortable-header">
-					<form
-						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
-						hx-target="#cards-table"
-						hx-swap="innerHTML"
-					>
-						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Priority)) }/>
-						if st.TasksQuery.SortColumn == models.Priority {
-							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.TasksQuery.SortDirection)) }/>
-						}
-						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Priority, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Priority, models.Asc)) }>
-							Priority
-						</button>
-					</form>
-				</th>
+				@SortableHeader(st, models.Priority)
 				@SortableHeader(st, models.ColumnImpact)
 				@SortableHeader(st, models.ColumnWip)
 				@SortableHeader(st, models.ColumnPlanned)
-				<th class="sortable-header">
-					<form
-						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
-						hx-target="#cards-table"
-						hx-swap="innerHTML"
-					>
-						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Completed)) }/>
-						if st.TasksQuery.SortColumn == models.Completed {
-							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.TasksQuery.SortDirection)) }/>
-						}
-						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Completed, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Completed, models.Asc)) }>
-							Completed
-						</button>
-					</form>
-				</th>
-				<th class="sortable-header">
-					<form
-						hx-post={ consts.URL_TOGGLE_SORT_TABLE }
-						hx-target="#cards-table"
-						hx-swap="innerHTML"
-					>
-						<input type="hidden" name={ consts.SORT_COLUMN_NAME } value={ strconv.Itoa(int(models.Created)) }/>
-						if st.TasksQuery.SortColumn == models.Created {
-							<input type="hidden" name={ consts.SORT_DIRECTION_NAME } value={ strconv.Itoa(int(st.TasksQuery.SortDirection)) }/>
-						}
-						<button type="submit" class={ "header-button", "sortable", templ.KV("sorted-desc", st.IsSorted(models.Created, models.Desc)), templ.KV("sorted-asc", st.IsSorted(models.Created, models.Asc)) }>
-							Created Date
-						</button>
-					</form>
-				</th>
+				@SortableHeader(st, models.Completed)
+				@SortableHeader(st, models.Created)
 				<th>Updated</th>
 				<th></th>
 				<th></th>
