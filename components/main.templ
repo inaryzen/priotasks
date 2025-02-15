@@ -220,11 +220,16 @@ templ TasksViewBody(cards []models.Task, st models.Settings) {
 						<ul>
 							<li><a hx-get="/view/new-task" hx-target="#modal-card" hx-swap="outerHTML" hx-trigger="click, keydown[ctrlKey&&shiftKey&&key=='N'] from:body">New</a></li>
 							<li><a href="/tasks">List</a></li>
-							<li><a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_TODAY } hx-target="body">Completed Today</a></li>
-							<li><a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_THIS_WEEK } hx-target="body">Completed This Week</a></li>
-							<li><a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_WEEK } hx-target="body">Completed Last Week</a></li>
-							<li><a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS } hx-target="body">Completed Last TWo Weeks</a></li>
-							<li><a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_RESET } hx-target="body">Reset</a></li>
+								<li class="dropdown">
+									<a href="#">Filters</a>
+									<div class="dropdown-content">
+										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_TODAY } hx-target="body">Completed Today</a>
+										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_THIS_WEEK } hx-target="body">Completed This Week</a>
+										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_WEEK } hx-target="body">Completed Last Week</a>
+										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS } hx-target="body">Completed Last Two Weeks</a>
+										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_RESET } hx-target="body">Reset Filters</a>
+									</div>
+								</li>
 						</ul>
 					</nav>
 				</header>
