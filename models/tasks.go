@@ -2,6 +2,7 @@ package models
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -103,7 +104,22 @@ func titleFromContent(content string) string {
 	if len(content) > TITLE_MAX_SIZE {
 		titleIdx = TITLE_MAX_SIZE
 	}
-	return content[:titleIdx]
+	result := content[:titleIdx]
+
+	// exclude line-breaks
+	titleIdx = strings.Index(result, "\n")
+	if titleIdx != -1 {
+		result = content[:titleIdx]
+	}
+	titleIdx = strings.Index(result, "\r\n")
+	if titleIdx != -1 {
+		result = content[:titleIdx]
+	}
+	titleIdx = strings.Index(result, "\r")
+	if titleIdx != -1 {
+		result = content[:titleIdx]
+	}
+	return result
 }
 
 func Create(prototype Task) Task {

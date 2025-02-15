@@ -17,6 +17,11 @@ export PATH=$PATH:$(go env GOPATH)/bin
 ./run.sh
 ```
 
+## Tests
+```
+go test ./...
+```
+
 # Links
 - Badger: https://dgraph.io/docs/badger/get-started/
 - HTMX: https://htmx.org/
