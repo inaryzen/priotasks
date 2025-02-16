@@ -12,9 +12,10 @@ const (
 	PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS = "prepared-query-completed-last-two-weeks"
 	PREPARED_QUERY_COMPLETED_LAST_WEEK      = "prepared-query-completed-last-week"
 
-	COMPLETED_SORT_NAME = "completed-sort"
-	SORT_COLUMN_NAME    = "sort-column"
-	SORT_DIRECTION_NAME = "sort-direction"
+	COMPLETED_SORT_NAME  = "completed-sort"
+	SORT_COLUMN_NAME     = "sort-column"
+	SORT_DIRECTION_NAME  = "sort-direction"
+	MODAL_TASK_COST_NAME = "modal-task-cost"
 
 	URL_TOGGLE_SORT_TABLE = "/toggle-sort-table"
 	URL_TASKS             = "/tasks"

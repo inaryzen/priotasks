@@ -11,6 +11,7 @@ import (
 var EMPTY_TASK = Task{
 	Priority: PriorityMedium,
 	Impact:   ImpactModerate,
+	Cost:     CostM,
 }
 
 var NOT_COMPLETED time.Time = time.Time{}
@@ -86,6 +87,45 @@ func (i TaskImpact) ToHumanString() string {
 	}
 }
 
+func StrToEnum[T ~int](a string) (T, error) {
+	val, err := strconv.Atoi(a)
+	if err != nil {
+		return T(0), err
+	} else {
+		return T(val), nil
+	}
+}
+
+type TaskCost int
+
+const (
+	CostXS TaskCost = iota
+	CostS
+	CostM
+	CostL
+	CostXL
+	CostXXL
+)
+
+func (i TaskCost) ToHumanString() string {
+	switch i {
+	case CostXS:
+		return "~10m"
+	case CostS:
+		return "~30m"
+	case CostM:
+		return "~1h"
+	case CostL:
+		return "~2h"
+	case CostXL:
+		return "~4h"
+	case CostXXL:
+		return "~8h"
+	default:
+		return "Unknown"
+	}
+}
+
 type Task struct {
 	Id        string
 	Title     string
@@ -97,6 +137,7 @@ type Task struct {
 	Wip       bool
 	Planned   bool
 	Impact    TaskImpact
+	Cost      TaskCost
 }
 
 func titleFromContent(content string) string {
@@ -138,6 +179,7 @@ func Create(prototype Task) Task {
 		Wip:       prototype.Wip,
 		Planned:   prototype.Planned,
 		Impact:    prototype.Impact,
+		Cost:      prototype.Cost,
 	}
 }
 
@@ -162,6 +204,7 @@ func (c Task) Update(change Task) Task {
 		Wip:       change.Wip,
 		Planned:   change.Planned,
 		Impact:    change.Impact,
+		Cost:      change.Cost,
 	}
 }
 

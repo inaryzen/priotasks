@@ -30,6 +30,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 		<colgroup>
 			<col style="width: 60px;"/>
 			<col style="width: 500px;"/>
+			<col style="width: 60px;"/>
 			<col style="width: 140px;"/>
 			<col style="width: 160px;"/> // New column for Impact
 			<col style="width: 60px;"/> // New column for Wip
@@ -44,6 +45,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 			<tr>
 				<th>Done</th>
 				<th>Title</th>
+				@SortableHeader(st, models.ColumnCost)
 				@SortableHeader(st, models.Priority)
 				@SortableHeader(st, models.ColumnImpact)
 				@SortableHeader(st, models.ColumnWip)
@@ -70,6 +72,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 						/>
 					</td>
 					<td id="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
+					<td id="column-impact">{ c.Cost.ToHumanString() }</td>
 					<td id="column-priority">{ c.Priority.ToStr() }</td>
 					<td id="column-impact">{ c.Impact.ToHumanString() }</td>
 					<td id="column-wip" class="status-column">
@@ -280,6 +283,44 @@ templ ModalTaskView(card models.Task) {
 								selected
 							}
 						>{ models.ImpactSlight.ToHumanString() }</option>
+					</select>
+					<select id={consts.MODAL_TASK_COST_NAME} name={consts.MODAL_TASK_COST_NAME} class={consts.MODAL_TASK_COST_NAME}>
+						<option
+							value={strconv.Itoa(int(models.CostXS))}
+							if card.Cost == models.CostXS {
+								selected
+							}
+						>{ models.CostXS.ToHumanString() }</option>
+						<option
+							value={strconv.Itoa(int(models.CostS))}
+							if card.Cost == models.CostS {
+								selected
+							}
+						>{ models.CostS.ToHumanString() }</option>
+						<option
+							value={strconv.Itoa(int(models.CostM))}
+							if card.Cost == models.CostM {
+								selected
+							}
+						>{ models.CostM.ToHumanString() }</option>
+						<option
+							value={strconv.Itoa(int(models.CostL))}
+							if card.Cost == models.CostL {
+								selected
+							}
+						>{ models.CostL.ToHumanString() }</option>
+						<option
+							value={strconv.Itoa(int(models.CostXL))}
+							if card.Cost == models.CostXL {
+								selected
+							}
+						>{ models.CostXL.ToHumanString() }</option>
+						<option
+							value={strconv.Itoa(int(models.CostXXL))}
+							if card.Cost == models.CostXXL {
+								selected
+							}
+						>{ models.CostXXL.ToHumanString() }</option>
 					</select>
 				</div>
 				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
