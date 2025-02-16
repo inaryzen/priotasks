@@ -79,9 +79,8 @@ func PutTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostTaskHandler(w http.ResponseWriter, r *http.Request) {
-	c := resolveTaskFromForm(r)
-	card := models.Create(c)
-	err := services.SaveTask(card)
+	t := resolveTaskFromForm(r)
+	err := services.SaveNewTask(t)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}

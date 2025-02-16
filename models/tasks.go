@@ -163,24 +163,13 @@ func titleFromContent(content string) string {
 	return result
 }
 
-func Create(prototype Task) Task {
-	if prototype.Title == "" {
-		prototype.Title = titleFromContent(prototype.Content)
+func (t Task) AsNewTask() Task {
+	if t.Title == "" {
+		t.Title = titleFromContent(t.Content)
 	}
-
-	return Task{
-		Id:        uuid.NewString(),
-		Title:     prototype.Title,
-		Content:   prototype.Content,
-		Created:   time.Now(),
-		Updated:   time.Now(),
-		Completed: prototype.Completed,
-		Priority:  prototype.Priority,
-		Wip:       prototype.Wip,
-		Planned:   prototype.Planned,
-		Impact:    prototype.Impact,
-		Cost:      prototype.Cost,
-	}
+	t.Id = uuid.NewString()
+	t.Created = time.Now()
+	return t
 }
 
 func (c Task) Update(change Task) Task {

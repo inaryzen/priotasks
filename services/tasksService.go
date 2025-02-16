@@ -39,16 +39,22 @@ func DeleteAllTasks() error {
 	return nil
 }
 
-func UpdateTask(c models.Task) error {
-	card, err := db.DB().FindTask(c.Id)
+func UpdateTask(changed models.Task) error {
+	orig, err := db.DB().FindTask(changed.Id)
 	if err != nil {
-		log.Printf("failed to find the record: %s: %s", c.Id, err)
+		log.Printf("failed to find the record: %s: %s", changed.Id, err)
 		return err
 	}
-	card = card.Update(c)
-	err = db.DB().SaveTask(card)
-	if err != nil {
-		log.Printf("failed to update the record: %s: %s", card.Id, err)
+	orig = orig.Update(changed)
+	if err = SaveTask(orig); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SaveNewTask(t models.Task) error {
+	t = t.AsNewTask()
+	if err := SaveTask(t); err != nil {
 		return err
 	}
 	return nil
