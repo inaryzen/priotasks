@@ -234,6 +234,18 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 		notCompleted := models.NOT_COMPLETED.Format(consts.DEFAULT_TIME_FORMAT)
 		args = append(args, notCompleted)
 	}
+	if query.FilterWip {
+		sqlQuery += " AND wip = 1"
+	}
+	if query.FilterNonWip {
+		sqlQuery += " AND wip = 0"
+	}
+	if query.Planned {
+		sqlQuery += " AND planned = 1"
+	}
+	if query.NonPlanned {
+		sqlQuery += " AND planned = 0"
+	}
 
 	if query.SortColumn != models.ColumnUndefined {
 		sqlQuery += " ORDER BY "

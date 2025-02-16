@@ -172,6 +172,76 @@ templ FilterPanel(st models.Settings) {
 				</label>
 			</div>
 		</fieldset>
+		<fieldset>
+			<legend>WIP</legend>
+			<div>
+				<label>
+					<input
+						if st.TasksQuery.FilterWip {
+							checked
+						}
+						type="checkbox"
+						id={ consts.FILTER_WIP }
+						name={ consts.FILTER_WIP }
+						hx-trigger="change"
+						hx-post={ "/filter/" + consts.FILTER_WIP }
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					/>
+					WIP
+				</label>
+				<label>
+					<input
+						if st.TasksQuery.FilterNonWip {
+							checked
+						}
+						type="checkbox"
+						id={ consts.FILTER_NON_WIP }
+						name={ consts.FILTER_NON_WIP }
+						hx-trigger="change"
+						hx-post={ "/filter/" + consts.FILTER_NON_WIP }
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					/>
+					Non-WIP
+				</label>
+			</div>
+		</fieldset>
+		<fieldset>
+			<legend>Planned</legend>
+			<div>
+				<label>
+					<input
+						if st.TasksQuery.Planned {
+							checked
+						}
+						type="checkbox"
+						id={ consts.FILTER_PLANNED }
+						name={ consts.FILTER_PLANNED }
+						hx-trigger="change"
+						hx-post={ "/filter/" + consts.FILTER_PLANNED }
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					/>
+					Planned
+				</label>
+				<label>
+					<input
+						if st.TasksQuery.NonPlanned {
+							checked
+						}
+						type="checkbox"
+						id={ consts.FILTER_NON_PLANNED }
+						name={ consts.FILTER_NON_PLANNED }
+						hx-trigger="change"
+						hx-post={ "/filter/" + consts.FILTER_NON_PLANNED }
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+					/>
+					Not-Planned
+				</label>
+			</div>
+		</fieldset>
 	</div>
 }
 

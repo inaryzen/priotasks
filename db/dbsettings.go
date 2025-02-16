@@ -7,13 +7,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/inaryzen/priotasks/common"
 	"github.com/inaryzen/priotasks/consts"
 	"github.com/inaryzen/priotasks/models"
 	_ "modernc.org/sqlite"
 )
 
 const (
-	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to"
+	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to, filter_wip, filter_non_wip, planned, non_planned"
 )
 
 func (d *DbSQLite) initSettings() {
@@ -25,7 +26,11 @@ func (d *DbSQLite) initSettings() {
 			active_sort_column INTEGER,
 			active_sort_direction INTEGER,
 			completed_from TEXT,
-			completed_to TEXT
+			completed_to TEXT,
+			filter_wip BOOLEAN,
+			filter_non_wip BOOLEAN,
+			planned BOOLEAN,
+			non_planned BOOLEAN
 		);
 	`)
 	if err != nil {
@@ -35,6 +40,8 @@ func (d *DbSQLite) initSettings() {
 	d.addSettingsCompletedFrom()
 	d.addSettingsCompletedTo()
 	d.addSettingsFilterIncomplete()
+	d.addSettingsFilterWipAndNonWip()
+	d.addSettingsPlannedAndNonPlanned()
 }
 
 func (d *DbSQLite) addSettingsCompletedFrom() {
@@ -64,6 +71,30 @@ func (d *DbSQLite) addSettingsFilterIncomplete() {
 	}
 }
 
+func (d *DbSQLite) addSettingsFilterWipAndNonWip() {
+	if !d.columnExists("settings", "filter_wip") {
+		_, err := d.instance.Exec(`
+			ALTER TABLE settings ADD COLUMN filter_wip BOOLEAN DEFAULT 0;
+			ALTER TABLE settings ADD COLUMN filter_non_wip BOOLEAN DEFAULT 0;
+		`)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func (d *DbSQLite) addSettingsPlannedAndNonPlanned() {
+	if !d.columnExists("settings", "planned") {
+		_, err := d.instance.Exec(`
+			ALTER TABLE settings ADD COLUMN planned BOOLEAN DEFAULT 0;
+			ALTER TABLE settings ADD COLUMN non_planned BOOLEAN DEFAULT 0;
+		`)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	var settings models.Settings
 	var completedFrom, completedTo string
@@ -77,6 +108,10 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 		&settings.TasksQuery.SortDirection,
 		&completedFrom,
 		&completedTo,
+		&settings.TasksQuery.FilterWip,
+		&settings.TasksQuery.FilterNonWip,
+		&settings.TasksQuery.Planned,
+		&settings.TasksQuery.NonPlanned,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -107,14 +142,18 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 func (d *DbSQLite) SaveSettings(s models.Settings) error {
 	sqlQuery :=
 		"INSERT INTO settings (" + SETTINGS_COLUMNS + ") " +
-			`VALUES (?, ?, ?, ?, ?, ?, ?)
+			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             filter_completed=excluded.filter_completed,
             filter_incompleted=excluded.filter_incompleted,
             active_sort_column=excluded.active_sort_column,
             active_sort_direction=excluded.active_sort_direction,
             completed_from=excluded.completed_from,
-            completed_to=excluded.completed_to
+            completed_to=excluded.completed_to,
+            filter_wip=excluded.filter_wip,
+            filter_non_wip=excluded.filter_non_wip,
+            planned=excluded.planned,
+            non_planned=excluded.non_planned
     `
 	completedFrom := time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
 	if !s.TasksQuery.CompletedFrom.IsZero() {
@@ -126,6 +165,8 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 		completedTo = s.TasksQuery.CompletedTo.Format(consts.DEFAULT_DATE_FORMAT)
 	}
 
+	common.Debug("SaveSettings: %v", s.TasksQuery)
+
 	args := []interface{}{
 		s.Id,
 		s.TasksQuery.FilterCompleted,
@@ -134,6 +175,10 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 		s.TasksQuery.SortDirection,
 		completedFrom,
 		completedTo,
+		s.TasksQuery.FilterWip,
+		s.TasksQuery.FilterNonWip,
+		s.TasksQuery.Planned,
+		s.TasksQuery.NonPlanned,
 	}
 
 	_, err := d.instance.Exec(sqlQuery, args...)

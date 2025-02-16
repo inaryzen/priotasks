@@ -5,6 +5,10 @@ const (
 	FILTER_NAME_HIDE_INCOMPLETED = "filter-incompleted"
 	FILTER_COMPLETED_FROM        = "filter-completed-from"
 	FILTER_COMPLETED_TO          = "filter-completed-to"
+	FILTER_WIP                   = "filter-wip"
+	FILTER_NON_WIP               = "filter-non-wip"
+	FILTER_PLANNED               = "filter-planned"
+	FILTER_NON_PLANNED           = "filter-non-planned"
 
 	PREPARED_QUERY_RESET                    = "prepared-query-clear"
 	PREPARED_QUERY_COMPLETED_TODAY          = "prepared-query-completed-today"

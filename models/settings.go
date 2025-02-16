@@ -73,11 +73,15 @@ type TasksQuery struct {
 	CompletedTo       time.Time
 	SortColumn        SortColumn
 	SortDirection     SortDirection
+	FilterWip         bool
+	FilterNonWip      bool
+	Planned           bool
+	NonPlanned        bool
 }
 
 func (t TasksQuery) String() string {
-	return fmt.Sprintf("FilterCompleted: %v, CompletedFrom: %v, CompletedTo: %v, SortColumn: %v, SortDirection: %v, FilterCompleted: %v",
-		t.FilterCompleted, t.CompletedFrom, t.CompletedTo, t.SortColumn, t.SortDirection, t.FilterIncompleted)
+	return fmt.Sprintf("FilterCompleted: %v, CompletedFrom: %v, CompletedTo: %v, SortColumn: %v, SortDirection: %v, FilterCompleted: %v, FilterWip: %v, FilterNonWip: %v, Planned: %v, NonPlanned: %v",
+		t.FilterCompleted, t.CompletedFrom, t.CompletedTo, t.SortColumn, t.SortDirection, t.FilterIncompleted, t.FilterWip, t.FilterNonWip, t.Planned, t.NonPlanned)
 }
 
 func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {
@@ -91,5 +95,9 @@ func (s TasksQuery) Reset() TasksQuery {
 	s.CompletedTo = NOT_COMPLETED
 	s.SortColumn = Priority
 	s.SortDirection = Desc
+	s.FilterWip = false
+	s.FilterNonWip = false
+	s.Planned = false
+	s.NonPlanned = false
 	return s
 }
