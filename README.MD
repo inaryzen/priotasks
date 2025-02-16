@@ -22,6 +22,11 @@ export PATH=$PATH:$(go env GOPATH)/bin
 go test ./...
 ```
 
+# Bump the version
+```
+./bump-version.sh
+```
+
 # Links
 - Badger: https://dgraph.io/docs/badger/get-started/
 - HTMX: https://htmx.org/
