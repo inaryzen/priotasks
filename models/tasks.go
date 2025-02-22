@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/inaryzen/priotasks/common"
 )
 
 var EMPTY_TASK = Task{
@@ -177,7 +178,9 @@ func (c Task) Update(change Task) Task {
 		change.Title = titleFromContent(change.Content)
 	}
 
-	var completed time.Time
+	common.Debug("Update: c.IsCompleted()=%v; change.IsCompleted=%v", c.IsCompleted(), change.IsCompleted())
+
+	var completed = c.Completed
 	if !c.IsCompleted() || !change.IsCompleted() {
 		completed = change.Completed
 	}

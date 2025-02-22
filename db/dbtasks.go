@@ -176,9 +176,8 @@ func (d *DbSQLite) DeleteAllTasks() error {
 }
 
 func (d *DbSQLite) SaveTask(task models.Task) error {
-	_, err := d.instance.Exec(
-		"INSERT INTO tasks ("+TASK_COLUMNS+") "+
-			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	sql := "INSERT INTO tasks (" + TASK_COLUMNS + ") " +
+		`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			title=excluded.title,
 			content=excluded.content,
@@ -190,7 +189,8 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 			planned=excluded.planned,
 			impact=excluded.impact,
 			cost=excluded.cost
-	`,
+	`
+	args := []interface{}{
 		task.Id,
 		task.Title,
 		task.Content,
@@ -202,7 +202,10 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 		task.Planned,
 		task.Impact,
 		task.Cost,
-	)
+	}
+	common.Debug("SaveTask: sqlQuery: %v", sql)
+	common.Debug("SaveTask: args: %v", args)
+	_, err := d.instance.Exec(sql, args...)
 	if err != nil {
 		return fmt.Errorf("failed to save task: %v: %w", task, err)
 	}
