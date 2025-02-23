@@ -65,7 +65,7 @@ func ApplyPreparedQuery(preparedQueryName string) error {
 	q := s.TasksQuery
 	q = q.Reset()
 
-	common.Debug("ApplyPreparedQuery: $v", preparedQueryName)
+	common.Debug("ApplyPreparedQuery: %v", preparedQueryName)
 
 	switch preparedQueryName {
 	case consts.PREPARED_QUERY_COMPLETED_TODAY:
@@ -100,7 +100,7 @@ func ApplyPreparedQuery(preparedQueryName string) error {
 		// nop
 	}
 
-	common.Debug("ApplyPreparedQuery: $v", q)
+	common.Debug("ApplyPreparedQuery: %v", q)
 	s.TasksQuery = q
 	UpdateUserSettings(s)
 
