@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	TASK_COLUMNS = "id, title, content, created, updated, completed, priority, wip, planned, impact, cost"
+	TASK_COLUMNS = "id, title, content, created, updated, completed, priority, wip, planned, impact, cost, value"
 )
 
 func (d *DbSQLite) initTasks() {
+	common.Debug("initTasks")
 	var err error
 	_, err = d.instance.Exec(`
 		CREATE TABLE IF NOT EXISTS tasks (
@@ -41,6 +42,20 @@ func (d *DbSQLite) initTasks() {
 	d.addTasksPlannedColumn()
 	d.addTasksImpactColumn()
 	d.addTasksCostColumn()
+
+	d.addValueColumn()
+}
+
+func (d *DbSQLite) addValueColumn() {
+	id := "task_table_add_value_column"
+	if !d.MigrationExists(id) {
+		_, err := d.instance.Exec("ALTER TABLE tasks ADD COLUMN value REAL DEFAULT 0")
+		if err != nil {
+			panic(err)
+		} else {
+			d.RecordMigration(id)
+		}
+	}
 }
 
 func (d *DbSQLite) addTasksWipColumn() {
@@ -96,6 +111,7 @@ func (d *DbSQLite) scanNextTask(rows *sql.Rows) (models.Task, error) {
 		&planned,
 		&task.Impact,
 		&task.Cost,
+		&task.Value,
 	)
 	if err != nil {
 		return models.EMPTY_TASK, err
@@ -177,7 +193,7 @@ func (d *DbSQLite) DeleteAllTasks() error {
 
 func (d *DbSQLite) SaveTask(task models.Task) error {
 	sql := "INSERT INTO tasks (" + TASK_COLUMNS + ") " +
-		`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id) DO UPDATE SET
 			title=excluded.title,
 			content=excluded.content,
@@ -188,7 +204,8 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 			wip=excluded.wip,
 			planned=excluded.planned,
 			impact=excluded.impact,
-			cost=excluded.cost
+			cost=excluded.cost,
+			value=excluded.value
 	`
 	args := []interface{}{
 		task.Id,
@@ -202,6 +219,7 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 		task.Planned,
 		task.Impact,
 		task.Cost,
+		task.Value,
 	}
 	common.Debug("SaveTask: sqlQuery: %v", sql)
 	common.Debug("SaveTask: args: %v", args)
@@ -267,6 +285,8 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 			sqlQuery += "planned"
 		case models.ColumnCost:
 			sqlQuery += "cost"
+		case models.ColumnValue:
+			sqlQuery += "value"
 		default:
 			sqlQuery += "created" // default sort
 		}

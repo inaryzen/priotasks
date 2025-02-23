@@ -19,10 +19,11 @@ const (
 	ColumnWip
 	ColumnPlanned
 	ColumnCost
+	ColumnValue
 )
 
 func (sc SortColumn) ToHumanString() string {
-	return []string{"Undefined", "Completed", "Title", "Created", "Updated", "Priority", "Impact", "WIP", "Plan", "T"}[sc]
+	return []string{"Undefined", "Completed", "Title", "Created", "Updated", "Priority", "Impact", "WIP", "Plan", "T", "Value"}[sc]
 }
 
 func ColumnFromString(str string) (result SortColumn) {

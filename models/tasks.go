@@ -139,6 +139,7 @@ type Task struct {
 	Planned   bool
 	Impact    TaskImpact
 	Cost      TaskCost
+	Value     float32
 }
 
 func titleFromContent(content string) string {
@@ -197,6 +198,7 @@ func (c Task) Update(change Task) Task {
 		Planned:   change.Planned,
 		Impact:    change.Impact,
 		Cost:      change.Cost,
+		Value:     change.Value,
 	}
 }
 
@@ -214,4 +216,39 @@ func (c Task) Uncomplete() Task {
 	c.Completed = NOT_COMPLETED
 	c.Updated = time.Now()
 	return c
+}
+
+func (c Task) CalculateValue() Task {
+	var priorityMultipliers = map[TaskPriority]float32{
+		PriorityUrgent: 1.7,
+		PriorityHigh:   1.2,
+		PriorityMedium: 1.0,
+		PriorityLow:    0.8,
+	}
+
+	baseValue := (float32(c.Impact)*1.1 + 1) * (float32(CostXXL-c.Cost) + 1)
+	c.Value = baseValue * priorityMultipliers[c.Priority]
+	return c
+}
+
+func (c Task) ValueAsHumanStr() string {
+	buckets := []struct {
+		low  int
+		high int
+		str  string
+	}{
+		{low: 30, high: 60, str: "💵💵💵💵"},
+		{low: 22, high: 30, str: "💵💵💵"},
+		{low: 13, high: 22, str: "💵💵"},
+		{low: 7, high: 13, str: "💵"},
+		{low: 0, high: 7, str: ""},
+	}
+
+	for _, b := range buckets {
+		if c.Value > float32(b.low) && c.Value < float32(b.high) {
+			return b.str
+		}
+	}
+
+	return "???"
 }

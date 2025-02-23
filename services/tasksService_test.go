@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/inaryzen/priotasks/db"
@@ -9,7 +10,8 @@ import (
 
 // MockDB implements db.Db interface for testing
 type MockDB struct {
-	tasks map[string]models.Task
+	tasks      map[string]models.Task
+	migrations map[string]bool
 }
 
 func (m *MockDB) Init()  {}
@@ -44,9 +46,21 @@ func (m *MockDB) SaveTask(task models.Task) error {
 	return nil
 }
 
+func (m *MockDB) MigrationExists(id string) bool {
+	return m.migrations[id]
+}
+
+func (m *MockDB) RecordMigration(id string) {
+	if m.migrations == nil {
+		m.migrations = make(map[string]bool)
+	}
+	m.migrations[id] = true
+}
+
 func setupTestDB() *MockDB {
 	mockDB := &MockDB{
-		tasks: make(map[string]models.Task),
+		tasks:      make(map[string]models.Task),
+		migrations: make(map[string]bool),
 	}
 	db.SetDB(mockDB)
 	return mockDB
@@ -154,5 +168,40 @@ func TestUpdateTask(t *testing.T) {
 		saved.Content != updatedTask.Content ||
 		saved.Priority != updatedTask.Priority {
 		t.Error("Task was not properly updated")
+	}
+}
+
+func TestSaveTask(t *testing.T) {
+	mockDB := setupTestDB()
+
+	task := models.Task{
+		Id:       "test-id",
+		Title:    "Test Task",
+		Content:  "Test Content",
+		Priority: models.PriorityHigh,
+		Impact:   models.ImpactHigh,
+		Cost:     models.CostL,
+	}
+
+	err := SaveTask(task)
+	if err != nil {
+		t.Errorf("SaveTask failed: %v", err)
+	}
+
+	saved, err := mockDB.FindTask("test-id")
+	if err != nil {
+		t.Errorf("Failed to retrieve saved task: %v", err)
+	}
+
+	fmt.Printf("saved=%v", saved)
+
+	if saved.Id != task.Id ||
+		saved.Title != task.Title ||
+		saved.Content != task.Content ||
+		saved.Priority != task.Priority ||
+		saved.Impact != task.Impact ||
+		saved.Cost != task.Cost ||
+		saved.Value == 0.0 {
+		t.Error("Task was not saved correctly")
 	}
 }

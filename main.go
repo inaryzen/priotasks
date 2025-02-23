@@ -17,6 +17,7 @@ import (
 	"github.com/inaryzen/priotasks/csv"
 	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/handlers"
+	"github.com/inaryzen/priotasks/services"
 )
 
 //go:embed assets/*
@@ -36,6 +37,7 @@ func main() {
 	badgerDb := db.NewDbSQLite()
 	db.SetDB(badgerDb)
 	db.DB().Init()
+
 	defer db.DB().Close()
 
 	if common.Conf.DumpOnStartup {
@@ -59,6 +61,7 @@ func main() {
 		defer s.Release()
 	}
 
+	services.Init()
 	configureServerMux()
 	go startServer(server)
 

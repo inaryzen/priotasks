@@ -61,6 +61,8 @@ func SaveNewTask(t models.Task) error {
 }
 
 func SaveTask(c models.Task) error {
+	c = c.CalculateValue()
+
 	err := db.DB().SaveTask(c)
 	if err != nil {
 		log.Printf("failed to update the record: %s: %s", c.Id, err)

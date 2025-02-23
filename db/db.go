@@ -26,6 +26,8 @@ type Db interface {
 	SaveTask(task models.Task) error
 	FindSettings(settingsId string) (models.Settings, error)
 	SaveSettings(s models.Settings) error
+	MigrationExists(id string) bool
+	RecordMigration(id string)
 }
 
 func SetDB(db Db) {

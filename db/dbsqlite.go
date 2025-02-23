@@ -31,6 +31,7 @@ func (d *DbSQLite) Init() {
 	}
 	d.instance = db
 
+	d.initMigration()
 	d.initTasks()
 	d.initSettings()
 }
