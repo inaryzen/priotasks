@@ -73,7 +73,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 							hx-post={ string(templ.URL(fmt.Sprintf("/tasks/%s/toggle-completed", c.Id))) }
 						/>
 					</td>
-					<td id="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
+					<td id="column-title" class="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
 					<td id="column-impact">{ c.Cost.ToHumanString() }</td>
 					<td id="column-priority">{ c.Priority.ToStr() }</td>
 					<td id="column-impact">{ c.Impact.ToHumanString() }</td>
