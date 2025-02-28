@@ -267,34 +267,34 @@ templ TasksView(cards []models.Task, st models.Settings) {
 }
 
 templ TasksViewBody(cards []models.Task, st models.Settings) {
-		<body>
-			<div class="container">
-				<header>
-					<nav>
-						<ul>
-							<li><a hx-get="/view/new-task" hx-target="#modal-card" hx-swap="outerHTML" hx-trigger="click, keydown[ctrlKey&&shiftKey&&key=='N'] from:body">New</a></li>
-							<li><a href="/tasks">List</a></li>
-								<li class="dropdown">
-									<a href="#">Filters</a>
-									<div class="dropdown-content">
-										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_TODAY } hx-target="body">Completed Today</a>
-										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_THIS_WEEK } hx-target="body">Completed This Week</a>
-										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_WEEK } hx-target="body">Completed Last Week</a>
-										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS } hx-target="body">Completed Last Two Weeks</a>
-										<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_RESET } hx-target="body">Reset Filters</a>
-									</div>
-								</li>
-						</ul>
-					</nav>
-				</header>
-				@FilterPanel(st)
-				@TaskTable(cards, st)
-			</div>
-			<div id="modal-card"></div>
-		</body>
+	<body>
+		<div class="container">
+			<header>
+				<nav>
+					<ul>
+						<li><a hx-get="/view/new-task" hx-target="#modal-card" hx-swap="outerHTML" hx-trigger="click, keydown[ctrlKey&&shiftKey&&key=='N'] from:body">New</a></li>
+						<li><a href="/tasks">List</a></li>
+						<li class="nav-bar-dropdown">
+							<a href="#">Filters</a>
+							<div class="dropdown-content">
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_TODAY } hx-target="body">Completed Today</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_THIS_WEEK } hx-target="body">Completed This Week</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_WEEK } hx-target="body">Completed Last Week</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS } hx-target="body">Completed Last Two Weeks</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_RESET } hx-target="body">Reset Filters</a>
+							</div>
+						</li>
+					</ul>
+				</nav>
+			</header>
+			@FilterPanel(st)
+			@TaskTable(cards, st)
+		</div>
+		<div id="modal-card"></div>
+	</body>
 }
 
-templ ModalTaskView(card models.Task) {
+templ ModalTaskView(card models.Task, taskTags, allTags []models.TaskTag) {
 	<div id="modal-card" class="modal" style="display: flex">
 		<div class="modal-content" id="modalContent">
 			@ModalTaskForm(card) {
@@ -359,39 +359,39 @@ templ ModalTaskView(card models.Task) {
 							}
 						>{ models.ImpactSlight.ToHumanString() }</option>
 					</select>
-					<select id={consts.MODAL_TASK_COST_NAME} name={consts.MODAL_TASK_COST_NAME} class={consts.MODAL_TASK_COST_NAME}>
+					<select id={ consts.MODAL_TASK_COST_NAME } name={ consts.MODAL_TASK_COST_NAME } class={ consts.MODAL_TASK_COST_NAME }>
 						<option
-							value={strconv.Itoa(int(models.CostXS))}
+							value={ strconv.Itoa(int(models.CostXS)) }
 							if card.Cost == models.CostXS {
 								selected
 							}
 						>{ models.CostXS.ToHumanString() }</option>
 						<option
-							value={strconv.Itoa(int(models.CostS))}
+							value={ strconv.Itoa(int(models.CostS)) }
 							if card.Cost == models.CostS {
 								selected
 							}
 						>{ models.CostS.ToHumanString() }</option>
 						<option
-							value={strconv.Itoa(int(models.CostM))}
+							value={ strconv.Itoa(int(models.CostM)) }
 							if card.Cost == models.CostM {
 								selected
 							}
 						>{ models.CostM.ToHumanString() }</option>
 						<option
-							value={strconv.Itoa(int(models.CostL))}
+							value={ strconv.Itoa(int(models.CostL)) }
 							if card.Cost == models.CostL {
 								selected
 							}
 						>{ models.CostL.ToHumanString() }</option>
 						<option
-							value={strconv.Itoa(int(models.CostXL))}
+							value={ strconv.Itoa(int(models.CostXL)) }
 							if card.Cost == models.CostXL {
 								selected
 							}
 						>{ models.CostXL.ToHumanString() }</option>
 						<option
-							value={strconv.Itoa(int(models.CostXXL))}
+							value={ strconv.Itoa(int(models.CostXXL)) }
 							if card.Cost == models.CostXXL {
 								selected
 							}
@@ -399,6 +399,17 @@ templ ModalTaskView(card models.Task) {
 					</select>
 				</div>
 				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
+
+				<div class="multi-select-checkbox-dropdown">
+					<input type="checkbox" id="toggle"/>
+					<label for="toggle">Select Options</label>
+					<div class="dropdown-content">
+						for _, tag := range allTags {
+							<label><input type="checkbox" name={"tag-" + string(tag)}/>{ string(tag) }</label>
+						}
+					</div>
+				</div>
+
 				<div class="task-flags">
 					<label class="checkbox-label">
 						<input

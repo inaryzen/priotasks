@@ -14,8 +14,8 @@ type MockDB struct {
 	migrations map[string]bool
 }
 
-func (m *MockDB) Init()  {}
-func (m *MockDB) Close() {}
+func (m *MockDB) Init(p string) {}
+func (m *MockDB) Close()        {}
 func (m *MockDB) Tasks() ([]models.Task, error) {
 	var result []models.Task
 	for _, value := range m.tasks {
@@ -30,6 +30,12 @@ func (m *MockDB) FindSettings(settingsId string) (models.Settings, error) {
 	return models.Settings{}, nil
 }
 func (m *MockDB) SaveSettings(s models.Settings) error { return nil }
+
+func (m *MockDB) SaveTag(tagId string) error                       { return nil }
+func (m *MockDB) TaskTags(taskId string) ([]models.TaskTag, error) { return nil, nil }
+func (m *MockDB) Tags() ([]models.TaskTag, error)                  { return nil, nil }
+
+func (m *MockDB) AddTagToTask(taskId, tagId string) error { return nil }
 
 func (m *MockDB) FindTask(taskId string) (models.Task, error) {
 	if task, exists := m.tasks[taskId]; exists {
@@ -78,7 +84,7 @@ func TestSaveNewTask_DoNotTouchTitleIfItDefined(t *testing.T) {
 		Completed: models.NOT_COMPLETED,
 	}
 
-	err := SaveNewTask(task)
+	err := SaveNewTask(task, nil)
 	if err != nil {
 		t.Errorf("SaveNewTask failed: %v", err)
 	}
@@ -102,7 +108,7 @@ func TestSaveNewTask_TitleCorrectlyUpdated(t *testing.T) {
 		Completed: models.NOT_COMPLETED,
 	}
 
-	err := SaveNewTask(task)
+	err := SaveNewTask(task, nil)
 	if err != nil {
 		t.Errorf("SaveNewTask failed: %v", err)
 	}
@@ -126,7 +132,7 @@ func TestSaveNewTask_TitleDoesNotHaveLineBreak(t *testing.T) {
 		Completed: models.NOT_COMPLETED,
 	}
 
-	err := SaveNewTask(task)
+	err := SaveNewTask(task, nil)
 	if err != nil {
 		t.Errorf("SaveNewTask failed: %v", err)
 	}
@@ -155,7 +161,7 @@ func TestUpdateTask(t *testing.T) {
 	updatedTask.Content = "NewContent"
 	updatedTask.Priority = models.PriorityLow
 
-	err := UpdateTask(updatedTask)
+	err := UpdateTask(updatedTask, nil)
 	if err != nil {
 		t.Errorf("UpdateTask failed: %v", err)
 	}

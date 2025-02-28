@@ -19,6 +19,8 @@ var NOT_COMPLETED time.Time = time.Time{}
 
 const TITLE_MAX_SIZE = 64
 
+type TaskTag string
+
 type TaskPriority int
 
 const (

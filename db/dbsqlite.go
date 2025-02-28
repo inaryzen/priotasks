@@ -18,18 +18,24 @@ func NewDbSQLite() *DbSQLite {
 	return &DbSQLite{}
 }
 
-func (d *DbSQLite) Init() {
-	dir, err := common.ResolveAppDir()
-	if err != nil {
-		log.Fatalf("Failed to get home directory: %v", err)
+func (d *DbSQLite) Init(dbFile string) {
+	if dbFile == "" {
+		dir, err := common.ResolveAppDir()
+		if err != nil {
+			log.Fatalf("Failed to get home directory: %v", err)
+		}
+		dbFile = filepath.Join(dir, "db.sqlite")
 	}
-	file := filepath.Join(dir, "db.sqlite")
 
-	db, err := sql.Open("sqlite", file)
+	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	d.instance = db
+	_, err = d.instance.Exec("PRAGMA foreign_keys = ON")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	d.initMigration()
 	d.initTasks()

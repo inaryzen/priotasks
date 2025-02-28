@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/inaryzen/priotasks/components"
@@ -54,24 +55,41 @@ func PostTaskToggleCompleted(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetViewEmptyTask(w http.ResponseWriter, r *http.Request) {
-	cardsView := components.ModalTaskView(models.EMPTY_TASK)
+	allTags, err := services.Tags()
+	if err != nil {
+		internalServerError(w, err)
+		return
+	}
+
+	cardsView := components.ModalTaskView(models.EMPTY_TASK, nil, allTags)
 	cardsView.Render(r.Context(), w)
 }
 
 func GetViewTaskByIdHandler(w http.ResponseWriter, r *http.Request) {
-	card, err := resolveTaskOrNotFound(w, r)
+	task, err := resolveTaskOrNotFound(w, r)
 	if err != nil {
+		internalServerError(w, err)
+		return
+	}
+	allTags, err := services.Tags()
+	if err != nil {
+		internalServerError(w, err)
+		return
+	}
+	taskTags, err := services.TaskTags(task.Id)
+	if err != nil {
+		internalServerError(w, err)
 		return
 	}
 
-	cardsView := components.ModalTaskView(card)
+	cardsView := components.ModalTaskView(task, taskTags, allTags)
 	cardsView.Render(r.Context(), w)
 }
 
 // TODO: Optimize. Instead of reloading the whole table, update only a single row
 func PutTaskHandler(w http.ResponseWriter, r *http.Request) {
-	c := resolveTaskFromForm(r)
-	err := services.UpdateTask(c)
+	task, tags := resolveTaskFromForm(r)
+	err := services.UpdateTask(task, tags)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -79,15 +97,15 @@ func PutTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostTaskHandler(w http.ResponseWriter, r *http.Request) {
-	t := resolveTaskFromForm(r)
-	err := services.SaveNewTask(t)
+	task, tags := resolveTaskFromForm(r)
+	err := services.SaveNewTask(task, tags)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	drawTaskTable(w, r)
 }
 
-func resolveTaskFromForm(r *http.Request) models.Task {
+func resolveTaskFromForm(r *http.Request) (models.Task, []models.TaskTag) {
 	formPriority := r.FormValue("modal-task-priority")
 	prio, err := models.StrToTaskPriority(formPriority)
 	if err != nil {
@@ -116,6 +134,14 @@ func resolveTaskFromForm(r *http.Request) models.Task {
 		completed = models.NOT_COMPLETED
 	}
 
+	var taskTags []models.TaskTag
+	for key, _ := range r.Form {
+		tag, found := strings.CutPrefix(key, "tag-")
+		if found {
+			taskTags = append(taskTags, models.TaskTag(tag))
+		}
+	}
+
 	return models.Task{
 		Id:        r.FormValue("card-id"),
 		Content:   r.FormValue("card-text"),
@@ -126,7 +152,7 @@ func resolveTaskFromForm(r *http.Request) models.Task {
 		Impact:    impact,
 		Completed: completed,
 		Cost:      cost,
-	}
+	}, taskTags
 }
 
 func drawTaskTable(w http.ResponseWriter, r *http.Request) {

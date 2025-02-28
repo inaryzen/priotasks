@@ -16,7 +16,7 @@ const (
 var instance Db
 
 type Db interface {
-	Init()
+	Init(string)
 	Close()
 	Tasks() ([]models.Task, error)
 	FindTask(taskId string) (models.Task, error)
@@ -28,6 +28,10 @@ type Db interface {
 	SaveSettings(s models.Settings) error
 	MigrationExists(id string) bool
 	RecordMigration(id string)
+	SaveTag(tagId string) error
+	AddTagToTask(taskId, tagId string) error
+	TaskTags(taskId string) ([]models.TaskTag, error)
+	Tags() ([]models.TaskTag, error)
 }
 
 func SetDB(db Db) {
