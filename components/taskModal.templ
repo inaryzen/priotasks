@@ -1,0 +1,186 @@
+package components
+
+
+import (
+	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/models"
+	"strconv"
+)
+
+templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []models.TaskTag) {
+	<div id="modal-card" class="modal" style="display: flex">
+		<div class="modal-content" id="modalContent">
+			@ModalTaskForm(card) {
+				<input type="hidden" name="card-id" value={ card.Id }/>
+				<div class="modal-title-row">
+					<input type="text" id="card-title" name="card-title" class="modal-task-title" value={ card.Title } placeholder="Card title..."/>
+					<select id="modal-task-priority" name="modal-task-priority" class="modal-task-priority">
+						<option
+							value="3"
+							if card.Priority == models.PriorityUrgent {
+								selected
+							}
+						>{ models.PriorityUrgent.ToStr() }</option>
+						<option
+							value="2"
+							if card.Priority == models.PriorityHigh {
+								selected
+							}
+						>{ models.PriorityHigh.ToStr() }</option>
+						<option
+							value="1"
+							if card.Priority == models.PriorityMedium {
+								selected
+							}
+						>{ models.PriorityMedium.ToStr() }</option>
+						<option
+							value="0"
+							if card.Priority == models.PriorityLow {
+								selected
+							}
+						>{ models.PriorityLow.ToStr() }</option>
+					</select>
+					<select id="modal-task-impact" name="modal-task-impact" class="modal-task-impact">
+						<option
+							value="4"
+							if card.Impact == models.ImpactHigh {
+								selected
+							}
+						>{ models.ImpactHigh.ToHumanString() }</option>
+						<option
+							value="3"
+							if card.Impact == models.ImpactConsiderable {
+								selected
+							}
+						>{ models.ImpactConsiderable.ToHumanString() }</option>
+						<option
+							value="2"
+							if card.Impact == models.ImpactModerate {
+								selected
+							}
+						>{ models.ImpactModerate.ToHumanString() }</option>
+						<option
+							value="1"
+							if card.Impact == models.ImpactLow {
+								selected
+							}
+						>{ models.ImpactLow.ToHumanString() }</option>
+						<option
+							value="0"
+							if card.Impact == models.ImpactSlight {
+								selected
+							}
+						>{ models.ImpactSlight.ToHumanString() }</option>
+					</select>
+					<select id={ consts.MODAL_TASK_COST_NAME } name={ consts.MODAL_TASK_COST_NAME } class={ consts.MODAL_TASK_COST_NAME }>
+						<option
+							value={ strconv.Itoa(int(models.CostXS)) }
+							if card.Cost == models.CostXS {
+								selected
+							}
+						>{ models.CostXS.ToHumanString() }</option>
+						<option
+							value={ strconv.Itoa(int(models.CostS)) }
+							if card.Cost == models.CostS {
+								selected
+							}
+						>{ models.CostS.ToHumanString() }</option>
+						<option
+							value={ strconv.Itoa(int(models.CostM)) }
+							if card.Cost == models.CostM {
+								selected
+							}
+						>{ models.CostM.ToHumanString() }</option>
+						<option
+							value={ strconv.Itoa(int(models.CostL)) }
+							if card.Cost == models.CostL {
+								selected
+							}
+						>{ models.CostL.ToHumanString() }</option>
+						<option
+							value={ strconv.Itoa(int(models.CostXL)) }
+							if card.Cost == models.CostXL {
+								selected
+							}
+						>{ models.CostXL.ToHumanString() }</option>
+						<option
+							value={ strconv.Itoa(int(models.CostXXL)) }
+							if card.Cost == models.CostXXL {
+								selected
+							}
+						>{ models.CostXXL.ToHumanString() }</option>
+					</select>
+				</div>
+				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
+
+				<div class="tags-list">
+					<div class="tags-list-header">Tags</div>
+					<div class="tags-list-content">
+						for _, tag := range allTags {
+							<label class="tag-item">
+								<input 
+									type="checkbox" 
+									name={"tag-" + string(tag)}
+									checked?={ taskTags[tag] }
+								/>
+								{ string(tag) }
+							</label>
+						}
+					</div>
+				</div>
+
+				<div class="task-flags">
+					<label class="checkbox-label">
+						<input
+							type="checkbox"
+							name="task-wip"
+							if card.Wip {
+								checked
+							}
+						/>
+						Work in Progress
+					</label>
+					<label class="checkbox-label">
+						<input
+							type="checkbox"
+							name="task-planned"
+							if card.Planned {
+								checked
+							}
+						/>
+						Planned
+					</label>
+					<label class="checkbox-label">
+						<input
+							type="checkbox"
+							name="task-completed"
+							if card.IsCompleted() {
+								checked
+							}
+						/>
+						Completed
+					</label>
+				</div>
+				<div class="form-buttons">
+					<button type="submit" class="btn-save">Save</button>
+					<button type="button" class="btn-cancel" onclick="closeModal('modal-card')">Cancel</button>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ ModalTaskForm(card models.Task) {
+	<form
+		if card == models.EMPTY_TASK {
+			hx-post="/tasks"
+		} else {
+			hx-put="/tasks"
+		}
+		hx-on:htmx:after-request="closeModal('modal-card')"
+		hx-target="#cards-table"
+		hx-swap="innerHTML"
+	>
+		{ children... }
+	</form>
+}

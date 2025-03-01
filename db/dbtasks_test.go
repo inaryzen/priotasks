@@ -224,3 +224,85 @@ func TestTags_EmptyDatabase(t *testing.T) {
 		t.Errorf("expected 0 tags in empty database, got %d", len(tags))
 	}
 }
+
+func TestDeleteTask_Success(t *testing.T) {
+	db := setupTestDB(t)
+
+	// Create a test task
+	task := models.Task{
+		Id:    uuid.New().String(),
+		Title: "Test Task",
+	}
+	if err := db.SaveTask(task); err != nil {
+		t.Fatalf("failed to create test task: %v", err)
+	}
+
+	// Add some tags to the task
+	tags := []string{
+		uuid.New().String(),
+		uuid.New().String(),
+	}
+	for _, tagId := range tags {
+		if err := db.SaveTag(tagId); err != nil {
+			t.Fatalf("failed to create tag: %v", err)
+		}
+		if err := db.AddTagToTask(task.Id, tagId); err != nil {
+			t.Fatalf("failed to add tag to task: %v", err)
+		}
+	}
+
+	// Delete the task
+	err := db.DeleteTask(task.Id)
+	if err != nil {
+		t.Fatalf("DeleteTask failed: %v", err)
+	}
+
+	// Verify task is deleted
+	_, err = db.FindTask(task.Id)
+	if err != ErrNotFound {
+		t.Errorf("expected ErrNotFound after deletion, got: %v", err)
+	}
+
+	// Verify tags are unlinked
+	taskTags, err := db.TaskTags(task.Id)
+	if err != nil {
+		t.Fatalf("failed to query task tags: %v", err)
+	}
+	if len(taskTags) != 0 {
+		t.Errorf("expected 0 tags after task deletion, got %d", len(taskTags))
+	}
+}
+
+func TestDeleteTask_NonExistent(t *testing.T) {
+	db := setupTestDB(t)
+
+	err := db.DeleteTask("non-existent-task")
+	if err != ErrNotFound {
+		t.Errorf("expected ErrNotFound when deleting non-existent task, got: %v", err)
+	}
+}
+
+func TestDeleteTask_WithNoTags(t *testing.T) {
+	db := setupTestDB(t)
+
+	// Create a test task without tags
+	task := models.Task{
+		Id:    uuid.New().String(),
+		Title: "Test Task No Tags",
+	}
+	if err := db.SaveTask(task); err != nil {
+		t.Fatalf("failed to create test task: %v", err)
+	}
+
+	// Delete the task
+	err := db.DeleteTask(task.Id)
+	if err != nil {
+		t.Fatalf("DeleteTask failed: %v", err)
+	}
+
+	// Verify task is deleted
+	_, err = db.FindTask(task.Id)
+	if err != ErrNotFound {
+		t.Errorf("expected ErrNotFound after deletion, got: %v", err)
+	}
+}

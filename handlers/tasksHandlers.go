@@ -61,7 +61,7 @@ func GetViewEmptyTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cardsView := components.ModalTaskView(models.EMPTY_TASK, nil, allTags)
+	cardsView := components.TaskModal(models.EMPTY_TASK, nil, allTags)
 	cardsView.Render(r.Context(), w)
 }
 
@@ -82,7 +82,12 @@ func GetViewTaskByIdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cardsView := components.ModalTaskView(task, taskTags, allTags)
+	taskTagsMap := make(map[models.TaskTag]bool)
+	for _, tag := range taskTags {
+		taskTagsMap[tag] = true
+	}
+
+	cardsView := components.TaskModal(task, taskTagsMap, allTags)
 	cardsView.Render(r.Context(), w)
 }
 

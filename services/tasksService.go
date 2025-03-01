@@ -49,12 +49,18 @@ func UpdateTask(changed models.Task, changedTags []models.TaskTag) error {
 	if err = SaveTask(orig); err != nil {
 		return err
 	}
-
-	origTags, err := TaskTags(orig.Id)
+	err = updateTaskTags(orig.Id, changedTags)
 	if err != nil {
-		return fmt.Errorf("UpdateTask: %w", err)
+		return err
 	}
+	return nil
+}
 
+func updateTaskTags(taskId string, changedTags []models.TaskTag) error {
+	origTags, err := TaskTags(taskId)
+	if err != nil {
+		return fmt.Errorf("updateTaskTags: %w", err)
+	}
 	findMissing := func(source, target []models.TaskTag) []models.TaskTag {
 		targetMap := make(map[models.TaskTag]bool)
 		for _, item := range target {
@@ -69,23 +75,20 @@ func UpdateTask(changed models.Task, changedTags []models.TaskTag) error {
 		}
 		return missing
 	}
-
 	newTags := findMissing(changedTags, origTags)
 	for _, t := range newTags {
-		err := RemoveTagFromTask(orig.Id, t)
+		err := AddTagToTask(taskId, t)
 		if err != nil {
-			return fmt.Errorf("UpdateTask: %w", err)
+			return fmt.Errorf("updateTaskTags: %w", err)
 		}
 	}
-
 	removeTags := findMissing(origTags, changedTags)
 	for _, t := range removeTags {
-		err := AddTagToTask(orig.Id, t)
+		err := RemoveTagFromTask(taskId, t)
 		if err != nil {
-			return fmt.Errorf("UpdateTask: %w", err)
+			return fmt.Errorf("updateTaskTags: %w", err)
 		}
 	}
-
 	return nil
 }
 
@@ -171,5 +174,9 @@ func TaskTags(taskId string) ([]models.TaskTag, error) {
 }
 
 func RemoveTagFromTask(taskId string, tag models.TaskTag) error {
+	err := db.DB().DeleteTagFromTask(taskId, string(tag))
+	if err != nil {
+		return fmt.Errorf("RemoveTagFromTask: taskId=%v, tag=%v: %w", taskId, tag, err)
+	}
 	return nil
 }

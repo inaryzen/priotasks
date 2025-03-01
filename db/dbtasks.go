@@ -13,9 +13,7 @@ import (
 )
 
 const (
-	TASK_COLUMNS       = "id, title, content, created, updated, completed, priority, wip, planned, impact, cost, value"
-	TASKS_TAGS_COLUMNS = "task_id, tag_id"
-	TAGS_COLUMNS       = "id, created"
+	TASK_COLUMNS = "id, title, content, created, updated, completed, priority, wip, planned, impact, cost, value"
 )
 
 func (d *DbSQLite) initTasks() {
@@ -44,41 +42,7 @@ func (d *DbSQLite) initTasks() {
 	d.addTasksPlannedColumn()
 	d.addTasksImpactColumn()
 	d.addTasksCostColumn()
-
 	d.addValueColumn()
-	d.addTagsTable()
-}
-
-func (d *DbSQLite) addTagsTable() {
-	id := "add_tags_support"
-	if !d.MigrationExists(id) {
-		tagsTableSql := `
-		CREATE TABLE IF NOT EXISTS tags (
-			id TEXT PRIMARY KEY,
-			created TEXT
-		)
-		`
-		_, err := d.instance.Exec(tagsTableSql)
-		if err != nil {
-			panic(err)
-		}
-
-		tasksTagsSql := `
-		CREATE TABLE IF NOT EXISTS TasksTags (
-			task_id TEXT,
-			tag_id TEXT,
-			PRIMARY KEY (task_id, tag_id),
-			FOREIGN KEY (task_id) REFERENCES tasks(id),
-			FOREIGN KEY (tag_id) REFERENCES tags(id)
-		)
-		`
-		_, err = d.instance.Exec(tasksTagsSql)
-		if err != nil {
-			panic(err)
-		}
-
-		d.RecordMigration(id)
-	}
 }
 
 func (d *DbSQLite) addValueColumn() {
@@ -205,14 +169,33 @@ func (d *DbSQLite) FindTask(taskId string) (models.Task, error) {
 }
 
 func (d *DbSQLite) DeleteTask(taskId string) error {
-	result, err := d.instance.Exec("DELETE FROM tasks WHERE id = ?", taskId)
+
+	tx, err := d.instance.Begin()
 	if err != nil {
+		return fmt.Errorf("DeleteTask: %w", err)
+	}
+
+	err = d.deleteAllTagsFromTask(taskId, tx)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("DeleteTask: %w", err)
+	}
+
+	result, err := tx.Exec("DELETE FROM tasks WHERE id = ?", taskId)
+	if err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to delete task: %v", err)
 	}
 
 	rc, err := result.RowsAffected()
 	if rc == 0 || err != nil {
+		tx.Rollback()
 		return ErrNotFound
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("DeleteTask: %w", err)
 	}
 
 	return nil
@@ -242,7 +225,7 @@ func (d *DbSQLite) SaveTask(task models.Task) error {
 			cost=excluded.cost,
 			value=excluded.value
 	`
-	args := []interface{}{
+	args := []any{
 		task.Id,
 		task.Title,
 		task.Content,
@@ -360,87 +343,4 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 	}
 
 	return result, nil
-}
-
-func (d *DbSQLite) SaveTag(tagId string) error {
-	sql := "INSERT INTO tags (" + TAGS_COLUMNS + ") " + " VALUES (?, ?)"
-	args := []interface{}{
-		tagId,
-		time.Now().Format(consts.DEFAULT_TIME_FORMAT),
-	}
-	logQuery("SaveTag", sql, args)
-
-	_, err := d.instance.Exec(sql, args...)
-	if err != nil {
-		return fmt.Errorf("SaveTag: error; tagId=%v; %w", tagId, err)
-	}
-	return nil
-}
-
-func (d *DbSQLite) AddTagToTask(taskId, tagId string) error {
-	sql := "INSERT INTO TasksTags (" + TASKS_TAGS_COLUMNS + ") " + " VALUES (?, ?)"
-	args := []interface{}{
-		taskId,
-		tagId,
-	}
-	logQuery("AddTagToTask", sql, args)
-
-	_, err := d.instance.Exec(sql, args...)
-	if err != nil {
-		return fmt.Errorf("failed to add tag to task; taskId=%v; tagId=%v; %w", taskId, tagId, err)
-	}
-	return nil
-}
-
-func (d *DbSQLite) TaskTags(taskId string) ([]models.TaskTag, error) {
-	sql := "SELECT " + TASKS_TAGS_COLUMNS + " FROM TasksTags WHERE task_id = ?"
-	args := []interface{}{taskId}
-	logQuery("TaskTags", sql, args)
-
-	rows, err := d.instance.Query(sql, args...)
-	if err != nil {
-		return nil, fmt.Errorf("TaskTags: failed to query tags for task %s: %w", taskId, err)
-	}
-	defer rows.Close()
-
-	var tags []models.TaskTag
-	for rows.Next() {
-		var tagId, taskId string
-		if err := rows.Scan(&taskId, &tagId); err != nil {
-			return nil, fmt.Errorf("TaskTags: failed to scan tag: %w", err)
-		}
-		tags = append(tags, models.TaskTag(tagId))
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("TaskTags: error iterating tags: %w", err)
-	}
-
-	return tags, nil
-}
-
-func (d *DbSQLite) Tags() ([]models.TaskTag, error) {
-	sql := "SELECT id FROM tags ORDER BY created DESC"
-	logQuery("Tags", sql, nil)
-
-	rows, err := d.instance.Query(sql)
-	if err != nil {
-		return nil, fmt.Errorf("Tags: failed to query tags: %w", err)
-	}
-	defer rows.Close()
-
-	var tags []models.TaskTag
-	for rows.Next() {
-		var tagId string
-		if err := rows.Scan(&tagId); err != nil {
-			return nil, fmt.Errorf("Tags: failed to scan tag: %w", err)
-		}
-		tags = append(tags, models.TaskTag(tagId))
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("Tags: error iterating tags: %w", err)
-	}
-
-	return tags, nil
 }

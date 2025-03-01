@@ -40,6 +40,7 @@ func (d *DbSQLite) Init(dbFile string) {
 	d.initMigration()
 	d.initTasks()
 	d.initSettings()
+	d.initTags()
 }
 
 func (d *DbSQLite) columnExists(tableName, columnName string) bool {

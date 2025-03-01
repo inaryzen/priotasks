@@ -30,6 +30,7 @@ type Db interface {
 	RecordMigration(id string)
 	SaveTag(tagId string) error
 	AddTagToTask(taskId, tagId string) error
+	DeleteTagFromTask(taskId, tagId string) error
 	TaskTags(taskId string) ([]models.TaskTag, error)
 	Tags() ([]models.TaskTag, error)
 }

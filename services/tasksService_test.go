@@ -6,12 +6,15 @@ import (
 
 	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/models"
+	"slices"
 )
 
 // MockDB implements db.Db interface for testing
 type MockDB struct {
 	tasks      map[string]models.Task
 	migrations map[string]bool
+	tags       map[string]bool
+	taskTags   map[string][]models.TaskTag
 }
 
 func (m *MockDB) Init(p string) {}
@@ -31,11 +34,56 @@ func (m *MockDB) FindSettings(settingsId string) (models.Settings, error) {
 }
 func (m *MockDB) SaveSettings(s models.Settings) error { return nil }
 
-func (m *MockDB) SaveTag(tagId string) error                       { return nil }
-func (m *MockDB) TaskTags(taskId string) ([]models.TaskTag, error) { return nil, nil }
-func (m *MockDB) Tags() ([]models.TaskTag, error)                  { return nil, nil }
+func (m *MockDB) SaveTag(tagId string) error {
+	if m.tags == nil {
+		m.tags = make(map[string]bool)
+	}
+	m.tags[tagId] = true
+	return nil
+}
 
-func (m *MockDB) AddTagToTask(taskId, tagId string) error { return nil }
+func (m *MockDB) TaskTags(taskId string) ([]models.TaskTag, error) {
+	if m.taskTags == nil {
+		return nil, nil
+	}
+	return m.taskTags[taskId], nil
+}
+
+func (m *MockDB) Tags() ([]models.TaskTag, error) {
+	var tags []models.TaskTag
+	for tag := range m.tags {
+		tags = append(tags, models.TaskTag(tag))
+	}
+	return tags, nil
+}
+
+func (m *MockDB) AddTagToTask(taskId, tagId string) error {
+	if m.taskTags == nil {
+		m.taskTags = make(map[string][]models.TaskTag)
+	}
+	m.taskTags[taskId] = append(m.taskTags[taskId], models.TaskTag(tagId))
+	return nil
+}
+
+func (m *MockDB) DeleteTagFromTask(taskId, tagId string) error {
+	if m.taskTags == nil {
+		return db.ErrNotFound
+	}
+
+	tags, exists := m.taskTags[taskId]
+	if !exists {
+		return db.ErrNotFound
+	}
+
+	for i, tag := range tags {
+		if string(tag) == tagId {
+			m.taskTags[taskId] = slices.Delete(tags, i, i+1)
+			return nil
+		}
+	}
+
+	return db.ErrNotFound
+}
 
 func (m *MockDB) FindTask(taskId string) (models.Task, error) {
 	if task, exists := m.tasks[taskId]; exists {
@@ -67,6 +115,8 @@ func setupTestDB() *MockDB {
 	mockDB := &MockDB{
 		tasks:      make(map[string]models.Task),
 		migrations: make(map[string]bool),
+		tags:       make(map[string]bool),
+		taskTags:   make(map[string][]models.TaskTag),
 	}
 	db.SetDB(mockDB)
 	return mockDB
@@ -209,5 +259,69 @@ func TestSaveTask(t *testing.T) {
 		saved.Cost != task.Cost ||
 		saved.Value == 0.0 {
 		t.Error("Task was not saved correctly")
+	}
+}
+
+func TestUpdateTaskTags(t *testing.T) {
+	mockDB := setupTestDB()
+	taskId := "test-task"
+
+	// Initial tags
+	initialTags := []models.TaskTag{"tag1", "tag2"}
+	for _, tag := range initialTags {
+		mockDB.SaveTag(string(tag))
+		mockDB.AddTagToTask(taskId, string(tag))
+	}
+
+	// Test cases
+	tests := []struct {
+		name        string
+		changedTags []models.TaskTag
+		wantErr     bool
+	}{
+		{
+			name:        "Add new tag",
+			changedTags: []models.TaskTag{"tag1", "tag2", "tag3"},
+			wantErr:     false,
+		},
+		{
+			name:        "Remove existing tag",
+			changedTags: []models.TaskTag{"tag1"},
+			wantErr:     false,
+		},
+		{
+			name:        "No changes",
+			changedTags: []models.TaskTag{"tag1", "tag2"},
+			wantErr:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := updateTaskTags(taskId, tt.changedTags)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("updateTaskTags() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			// Verify tags were updated correctly
+			resultTags, err := TaskTags(taskId)
+			if err != nil {
+				t.Errorf("Failed to get task tags: %v", err)
+				return
+			}
+
+			if len(resultTags) != len(tt.changedTags) {
+				t.Errorf("Expected %d tags, got %d", len(tt.changedTags), len(resultTags))
+			}
+
+			// Check if all expected tags are present
+			for _, expectedTag := range tt.changedTags {
+				found := slices.Contains(resultTags, expectedTag)
+				if !found {
+					t.Errorf("Expected tag %s not found in result", expectedTag)
+				}
+			}
+		})
 	}
 }

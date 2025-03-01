@@ -495,57 +495,54 @@ input[type="checkbox"]:checked {
     width: 200px;
 }
 
-/* Replace the existing multi-select-checkbox-dropdown styles with these */
-
-.multi-select-checkbox-dropdown {
-    position: relative;
-    display: inline-block;
-    margin: 5px 0;
-}
-
-.multi-select-checkbox-dropdown input[type="checkbox"]#toggle {
-    display: none;
-}
-
-.multi-select-checkbox-dropdown > label {
-    display: block;
+/* Add new tags list styles */
+.tags-list {
+    margin: 10px 0;
+    border: 1px solid #404040;
+    border-radius: 4px;
     background-color: #333;
-    color: #e0e0e0;
-    padding: 10px;
-    border: 1px solid #404040;
-    border-radius: 4px;
-    cursor: pointer;
 }
 
-.multi-select-checkbox-dropdown .dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: #2d2d2d;
-    border: 1px solid #404040;
-    min-width: 200px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
-    border-radius: 4px;
-    margin-top: 2px;
-}
-
-.multi-select-checkbox-dropdown input[type="checkbox"]#toggle:checked ~ .dropdown-content {
-    display: block;
-}
-
-.multi-select-checkbox-dropdown .dropdown-content label {
-    display: block;
+.tags-list-header {
     padding: 8px 12px;
-    color: #e0e0e0;
-    cursor: pointer;
+    background-color: #2d2d2d;
+    border-bottom: 1px solid #404040;
+    font-weight: bold;
+    border-radius: 4px 4px 0 0;
 }
 
-.multi-select-checkbox-dropdown .dropdown-content label:hover {
+.tags-list-content {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.tags-list-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tags-list-content::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 4px;
+}
+
+.tags-list-content::-webkit-scrollbar-thumb {
+    background: #505050;
+    border-radius: 4px;
+}
+
+.tag-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.tag-item:hover {
     background-color: #404040;
 }
 
-.multi-select-checkbox-dropdown .dropdown-content input[type="checkbox"] {
+.tag-item input[type="checkbox"] {
     margin-right: 8px;
 }
