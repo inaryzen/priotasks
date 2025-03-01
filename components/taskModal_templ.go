@@ -607,7 +607,7 @@ func TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mod
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "</div></div><div class=\"task-flags\"><label class=\"checkbox-label\"><input type=\"checkbox\" name=\"task-wip\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "</div></div><div class=\"add-tag-container\"><input type=\"text\" id=\"new-tag-input\" class=\"new-tag-input\" name=\"new-tag\" placeholder=\"Enter new tag...\"> <button type=\"button\" class=\"btn-add-tag\" hx-post=\"/tags\" hx-include=\"#new-tag-input\" hx-target=\".tags-list-content\" hx-swap=\"innerHTML\">Add Tag</button></div><div class=\"task-flags\"><label class=\"checkbox-label\"><input type=\"checkbox\" name=\"task-wip\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

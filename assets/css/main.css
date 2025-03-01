@@ -518,3 +518,32 @@ input[type="checkbox"]:checked {
 .tag-item input[type="checkbox"] {
     margin-right: 8px;
 }
+
+.add-tag-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.add-tag-container .new-tag-input {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 0px;
+}
+
+.btn-add-tag {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    background-color: #404040;
+    color: #e0e0e0;
+}
+
+.btn-add-tag:hover {
+    background-color: #505050;
+}

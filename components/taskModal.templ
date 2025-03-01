@@ -128,6 +128,25 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 						}
 					</div>
 				</div>
+				<div class="add-tag-container">
+					<input 
+						type="text" 
+						id="new-tag-input" 
+                        class="new-tag-input"
+						name="new-tag" 
+						placeholder="Enter new tag..."
+					/>
+					<button 
+						type="button"
+                        class="btn-add-tag"
+						hx-post="/tags"
+						hx-include="#new-tag-input"
+						hx-target=".tags-list-content"
+						hx-swap="innerHTML"
+					>
+						Add Tag
+					</button>
+				</div>
 
 				<div class="task-flags">
 					<label class="checkbox-label">
