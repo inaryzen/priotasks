@@ -296,19 +296,6 @@ input[type="text"],
     opacity: 0.8;
 }
 
-.close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    color: #555;
-}
-
-close:hover {
-    color: #000;
-}
-
 .modal-content .modal-title-row {
     display: flex;
     align-items: center;
@@ -478,21 +465,6 @@ input[type="checkbox"]:checked {
 
 .tag button:hover {
     color: #ff4444;
-}
-
-.tags-input-container {
-    margin: 10px 0;
-}
-
-.tags-select {
-    font-family: "Consolas", "Courier New", Courier, "Lucida Console", monospace;
-    color: #e0e0e0;
-    padding: 8px;
-    border: 1px solid #404040;
-    border-radius: 5px;
-    font-size: 1em;
-    background-color: #333;
-    width: 200px;
 }
 
 /* Add new tags list styles */
