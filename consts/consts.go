@@ -27,4 +27,6 @@ const (
 
 	DEFAULT_TIME_FORMAT = "2006-01-02 15:04:05"
 	DEFAULT_DATE_FORMAT = "2006-01-02"
+
+	INPUT_NAME_NEW_TAG = "input-name-new-tag"
 )

@@ -1,6 +1,5 @@
 package components
 
-
 import (
 	"github.com/inaryzen/priotasks/consts"
 	"github.com/inaryzen/priotasks/models"
@@ -112,42 +111,33 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 					</select>
 				</div>
 				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
-
 				<div class="tags-list">
 					<div class="tags-list-header">Tags</div>
-					<div class="tags-list-content">
+					<div id="tags-list-content" class="tags-list-content">
 						for _, tag := range allTags {
-							<label class="tag-item">
-								<input 
-									type="checkbox" 
-									name={"tag-" + string(tag)}
-									checked?={ taskTags[tag] }
-								/>
-								{ string(tag) }
-							</label>
+							@TaskModalTag(tag, taskTags[tag])
 						}
 					</div>
 				</div>
 				<div class="add-tag-container">
-					<input 
-						type="text" 
-						id="new-tag-input" 
-                        class="new-tag-input"
-						name="new-tag" 
+					<input
+						type="text"
+						id={ consts.INPUT_NAME_NEW_TAG }
+						class="new-tag-input"
+						name={ consts.INPUT_NAME_NEW_TAG }
 						placeholder="Enter new tag..."
 					/>
-					<button 
+					<button
 						type="button"
-                        class="btn-add-tag"
+						class="btn-add-tag"
 						hx-post="/tags"
-						hx-include="#new-tag-input"
-						hx-target=".tags-list-content"
-						hx-swap="innerHTML"
+						hx-include={ "#" + consts.INPUT_NAME_NEW_TAG }
+						hx-target="#tags-list-content"
+						hx-swap="beforeend scroll:bottom"
 					>
 						Add Tag
 					</button>
 				</div>
-
 				<div class="task-flags">
 					<label class="checkbox-label">
 						<input
@@ -181,7 +171,23 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 					</label>
 				</div>
 				<div class="form-buttons">
-					<button type="submit" class="btn-save">Save</button>
+					<button
+						type="button"
+						class="btn-save"
+						if card == models.EMPTY_TASK {
+							hx-post="/tasks"
+						} else {
+							hx-put="/tasks"
+						}
+						hx-target="#cards-table"
+						hx-swap="innerHTML"
+						hx-include="#task-form"
+						
+						hx-on:htmx:after-request="closeModal('modal-card')"
+					>
+						Save                                                              
+					</button>
+					// <button type="submit" class="btn-save" hx-on:htmx:after-request="closeModal('modal-card')">Save</button>
 					<button type="button" class="btn-cancel" onclick="closeModal('modal-card')">Cancel</button>
 				</div>
 			}
@@ -190,16 +196,18 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 }
 
 templ ModalTaskForm(card models.Task) {
-	<form
-		if card == models.EMPTY_TASK {
-			hx-post="/tasks"
-		} else {
-			hx-put="/tasks"
-		}
-		hx-on:htmx:after-request="closeModal('modal-card')"
-		hx-target="#cards-table"
-		hx-swap="innerHTML"
-	>
+	<form id="task-form">
 		{ children... }
 	</form>
+}
+
+templ TaskModalTag(tag models.TaskTag, selected bool) {
+	<label class="tag-item">
+		<input
+			type="checkbox"
+			name={ "tag-" + string(tag) }
+			checked?={ selected }
+		/>
+		{ string(tag) }
+	</label>
 }
