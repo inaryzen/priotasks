@@ -277,6 +277,7 @@ templ TasksViewBody(cards []models.Task, st models.Settings) {
 						<li class="nav-bar-dropdown">
 							<a href="#">Filters</a>
 							<div class="dropdown-content">
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_YESTERDAY } hx-target="body">Completed Yesterday</a>
 								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_TODAY } hx-target="body">Completed Today</a>
 								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_THIS_WEEK } hx-target="body">Completed This Week</a>
 								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_WEEK } hx-target="body">Completed Last Week</a>

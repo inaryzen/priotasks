@@ -68,6 +68,13 @@ func ApplyPreparedQuery(preparedQueryName string) error {
 	common.Debug("ApplyPreparedQuery: %v", preparedQueryName)
 
 	switch preparedQueryName {
+	case consts.PREPARED_QUERY_COMPLETED_YESTERDAY:
+		now := time.Now()
+		midnightYesterday := time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 0, 0, now.Location())
+		q.CompletedFrom = midnightYesterday
+		q.FilterIncompleted = true
+		q.FilterCompleted = false
+		q.SortColumn = models.Completed
 	case consts.PREPARED_QUERY_COMPLETED_TODAY:
 		now := time.Now()
 		midnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())

@@ -19,6 +19,7 @@ type Config struct {
 var Conf Config
 
 func InitConfig() {
+	Debug("InitConfig...")
 	var debug = flag.Bool("d", false, "enable debug")
 	var serverPort = flag.Int("p", 12345, "server port")
 	var dumpOnStartup = flag.Bool("dump", true, "dump on startup")
@@ -32,6 +33,7 @@ func InitConfig() {
 		AutomaticDump:     *autoDump,
 		LoadDumpOnStartup: *loadDump,
 	}
+	Debug("InitConfig completed...")
 }
 
 func IsDebug() bool {

@@ -78,11 +78,34 @@ type TasksQuery struct {
 	FilterNonWip      bool
 	Planned           bool
 	NonPlanned        bool
+	Tags              []TaskTag
 }
 
 func (t TasksQuery) String() string {
-	return fmt.Sprintf("FilterCompleted: %v, CompletedFrom: %v, CompletedTo: %v, SortColumn: %v, SortDirection: %v, FilterCompleted: %v, FilterWip: %v, FilterNonWip: %v, Planned: %v, NonPlanned: %v",
-		t.FilterCompleted, t.CompletedFrom, t.CompletedTo, t.SortColumn, t.SortDirection, t.FilterIncompleted, t.FilterWip, t.FilterNonWip, t.Planned, t.NonPlanned)
+	return fmt.Sprintf(
+		"FilterCompleted: %v, "+
+			"CompletedFrom: %v, "+
+			"CompletedTo: %v, "+
+			"SortColumn: %v, "+
+			"SortDirection: %v, "+
+			"FilterCompleted: %v, "+
+			"FilterWip: %v, "+
+			"FilterNonWip: %v, "+
+			"Planned: %v, "+
+			"NonPlanned: %v, "+
+			"Tags: %v",
+		t.FilterCompleted,
+		t.CompletedFrom,
+		t.CompletedTo,
+		t.SortColumn,
+		t.SortDirection,
+		t.FilterIncompleted,
+		t.FilterWip,
+		t.FilterNonWip,
+		t.Planned,
+		t.NonPlanned,
+		t.Tags,
+	)
 }
 
 func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {
@@ -100,5 +123,6 @@ func (s TasksQuery) Reset() TasksQuery {
 	s.FilterNonWip = false
 	s.Planned = false
 	s.NonPlanned = false
+	s.Tags = []TaskTag{}
 	return s
 }

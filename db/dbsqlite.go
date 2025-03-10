@@ -19,6 +19,7 @@ func NewDbSQLite() *DbSQLite {
 }
 
 func (d *DbSQLite) Init(dbFile string) {
+	common.Debug("dbsql init...")
 	if dbFile == "" {
 		dir, err := common.ResolveAppDir()
 		if err != nil {

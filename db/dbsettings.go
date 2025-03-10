@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to, filter_wip, filter_non_wip, planned, non_planned"
+	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to, filter_wip, filter_non_wip, planned, non_planned, tags"
 )
 
 func (d *DbSQLite) initSettings() {
@@ -30,7 +31,8 @@ func (d *DbSQLite) initSettings() {
 			filter_wip BOOLEAN,
 			filter_non_wip BOOLEAN,
 			planned BOOLEAN,
-			non_planned BOOLEAN
+			non_planned BOOLEAN,
+			tags TEXT
 		);
 	`)
 	if err != nil {
@@ -42,6 +44,19 @@ func (d *DbSQLite) initSettings() {
 	d.addSettingsFilterIncomplete()
 	d.addSettingsFilterWipAndNonWip()
 	d.addSettingsPlannedAndNonPlanned()
+	d.settingsTableAddTagsColumn()
+}
+
+func (d *DbSQLite) settingsTableAddTagsColumn() {
+	id := "settings_table_add_tags_column"
+	if !d.MigrationExists(id) {
+		_, err := d.instance.Exec("ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ''")
+		if err != nil {
+			panic(err)
+		} else {
+			d.RecordMigration(id)
+		}
+	}
 }
 
 func (d *DbSQLite) addSettingsCompletedFrom() {
@@ -98,6 +113,7 @@ func (d *DbSQLite) addSettingsPlannedAndNonPlanned() {
 func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	var settings models.Settings
 	var completedFrom, completedTo string
+	var tagsText string
 
 	row := d.instance.QueryRow("SELECT "+SETTINGS_COLUMNS+" FROM settings WHERE id = ?", settingsId)
 	err := row.Scan(
@@ -112,6 +128,7 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 		&settings.TasksQuery.FilterNonWip,
 		&settings.TasksQuery.Planned,
 		&settings.TasksQuery.NonPlanned,
+		&tagsText,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -127,7 +144,6 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	if err != nil {
 		return models.Settings{}, fmt.Errorf("failed to parse completed_from: %w", err)
 	}
-
 	if completedTo == "" {
 		completedTo = time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
 	}
@@ -135,14 +151,19 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 	if err != nil {
 		return models.Settings{}, fmt.Errorf("failed to parse completed_to: %w", err)
 	}
-
+	if tagsText != "" {
+		err = json.Unmarshal([]byte(tagsText), &settings.TasksQuery.Tags)
+		if err != nil {
+			return models.Settings{}, fmt.Errorf("failed to pars tags: %w", err)
+		}
+	}
 	return settings, nil
 }
 
 func (d *DbSQLite) SaveSettings(s models.Settings) error {
 	sqlQuery :=
 		"INSERT INTO settings (" + SETTINGS_COLUMNS + ") " +
-			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             filter_completed=excluded.filter_completed,
             filter_incompleted=excluded.filter_incompleted,
@@ -153,21 +174,25 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
             filter_wip=excluded.filter_wip,
             filter_non_wip=excluded.filter_non_wip,
             planned=excluded.planned,
-            non_planned=excluded.non_planned
+            non_planned=excluded.non_planned,
+			tags=excluded.tags
     `
 	completedFrom := time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
 	if !s.TasksQuery.CompletedFrom.IsZero() {
 		completedFrom = s.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT)
 	}
-
 	completedTo := time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
 	if !s.TasksQuery.CompletedTo.IsZero() {
 		completedTo = s.TasksQuery.CompletedTo.Format(consts.DEFAULT_DATE_FORMAT)
 	}
+	tagsText, err := json.Marshal(s.TasksQuery.Tags)
+	if err != nil {
+		return fmt.Errorf("failed to marshal tags: %v: %w", s.TasksQuery.Tags, err)
+	}
 
 	common.Debug("SaveSettings: %v", s.TasksQuery)
 
-	args := []interface{}{
+	args := []any{
 		s.Id,
 		s.TasksQuery.FilterCompleted,
 		s.TasksQuery.FilterIncompleted,
@@ -179,9 +204,10 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 		s.TasksQuery.FilterNonWip,
 		s.TasksQuery.Planned,
 		s.TasksQuery.NonPlanned,
+		tagsText,
 	}
 
-	_, err := d.instance.Exec(sqlQuery, args...)
+	_, err = d.instance.Exec(sqlQuery, args...)
 	if err != nil {
 		return fmt.Errorf("failed to save settings: %v: %w", s, err)
 	}

@@ -11,6 +11,7 @@ const (
 	FILTER_NON_PLANNED           = "filter-non-planned"
 
 	PREPARED_QUERY_RESET                    = "prepared-query-clear"
+	PREPARED_QUERY_COMPLETED_YESTERDAY      = "prepared-query-completed-yesterday"
 	PREPARED_QUERY_COMPLETED_TODAY          = "prepared-query-completed-today"
 	PREPARED_QUERY_COMPLETED_THIS_WEEK      = "prepared-query-completed-this-week"
 	PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS = "prepared-query-completed-last-two-weeks"
