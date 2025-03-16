@@ -205,12 +205,15 @@ func drawTaskViewBody(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
 	settings, err := findSettingsOrWriteError(w)
 	if err != nil {
 		return
 	}
-	body := components.TasksViewBody(cards, settings)
+	tags, err := services.Tags()
+	if err != nil {
+		internalServerError(w, err)
+	}
+	body := components.TasksViewBody(cards, settings, tags)
 	body.Render(r.Context(), w)
 }
 
@@ -219,12 +222,15 @@ func drawTaskView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-
 	settings, err := findSettingsOrWriteError(w)
 	if err != nil {
 		return
 	}
-	cardsView := components.TasksView(cards, settings)
+	tags, err := services.Tags()
+	if err != nil {
+		internalServerError(w, err)
+	}
+	cardsView := components.TasksView(cards, settings, tags)
 	cardsView.Render(r.Context(), w)
 }
 

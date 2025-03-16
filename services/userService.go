@@ -23,6 +23,21 @@ func SetCompletedFilter(val bool) error {
 	return err
 }
 
+func RemoveTagFromSettings(tag models.TaskTag) error {
+	common.Debug("RemoveTagFromSettings: %v", tag)
+	s, err := FindUserSettings()
+	if err != nil {
+		return fmt.Errorf("RemoveTagFromfilter: not found: %w", err)
+	}
+	t := s.TasksQuery
+	s.TasksQuery = t.RemoveTag(tag)
+	err = UpdateUserSettings(s)
+	if err != nil {
+		return fmt.Errorf("RemoveTagFromfilter: update: %w", err)
+	}
+	return nil
+}
+
 func FindUserSettings() (models.Settings, error) {
 	var s models.Settings
 	var err error

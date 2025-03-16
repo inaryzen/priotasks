@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -67,6 +68,10 @@ type Settings struct {
 	TasksQuery TasksQuery
 }
 
+func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {
+	return s.TasksQuery.SortColumn == c && s.TasksQuery.SortDirection == d
+}
+
 type TasksQuery struct {
 	FilterCompleted   bool
 	FilterIncompleted bool
@@ -79,6 +84,18 @@ type TasksQuery struct {
 	Planned           bool
 	NonPlanned        bool
 	Tags              []TaskTag
+}
+
+func (t TasksQuery) RemoveTag(target TaskTag) TasksQuery {
+	var newTags []TaskTag = nil
+	for i, tag := range t.Tags {
+		if tag == target {
+			newTags = slices.Delete(t.Tags, i, i+1)
+			t.Tags = newTags
+			break
+		}
+	}
+	return t
 }
 
 func (t TasksQuery) String() string {
@@ -106,10 +123,6 @@ func (t TasksQuery) String() string {
 		t.NonPlanned,
 		t.Tags,
 	)
-}
-
-func (s Settings) IsSorted(c SortColumn, d SortDirection) bool {
-	return s.TasksQuery.SortColumn == c && s.TasksQuery.SortDirection == d
 }
 
 func (s TasksQuery) Reset() TasksQuery {

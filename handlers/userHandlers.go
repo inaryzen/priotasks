@@ -20,6 +20,15 @@ func PostPreparedQuery(w http.ResponseWriter, r *http.Request) {
 	drawTaskViewBody(w, r)
 }
 
+func DeleteTagName(w http.ResponseWriter, r *http.Request) {
+	tagStr := r.PathValue("name")
+	err := services.RemoveTagFromSettings(models.TaskTag(tagStr))
+	if err != nil {
+		internalServerError(w, err)
+	}
+	drawTaskViewBody(w, r)
+}
+
 func PostFilterName(w http.ResponseWriter, r *http.Request) {
 	s, err := services.FindUserSettings()
 	t := s.TasksQuery
@@ -36,17 +45,9 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 		filter := r.Form.Get(consts.FILTER_NAME_HIDE_COMPLETED)
 		value := filter != ""
 		t.FilterCompleted = value
-		if err != nil {
-			postFilterNameError(w, filterName, err)
-			return
-		}
 	case consts.FILTER_NAME_HIDE_INCOMPLETED:
 		filter := r.Form.Get(consts.FILTER_NAME_HIDE_INCOMPLETED)
 		t.FilterIncompleted = filter != ""
-		if err != nil {
-			postFilterNameError(w, filterName, err)
-			return
-		}
 	case consts.FILTER_COMPLETED_FROM:
 		value := r.Form.Get(consts.FILTER_COMPLETED_FROM)
 		var completedFrom time.Time = models.NOT_COMPLETED
@@ -73,34 +74,21 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 		filter := r.Form.Get(consts.FILTER_WIP)
 		value := filter != ""
 		t.FilterWip = value
-		if err != nil {
-			postFilterNameError(w, filterName, err)
-			return
-		}
 	case consts.FILTER_NON_WIP:
 		filter := r.Form.Get(consts.FILTER_NON_WIP)
 		value := filter != ""
 		t.FilterNonWip = value
-		if err != nil {
-			postFilterNameError(w, filterName, err)
-			return
-		}
 	case consts.FILTER_PLANNED:
 		filter := r.Form.Get(consts.FILTER_PLANNED)
 		value := filter != ""
 		t.Planned = value
-		if err != nil {
-			postFilterNameError(w, filterName, err)
-			return
-		}
 	case consts.FILTER_NON_PLANNED:
 		filter := r.Form.Get(consts.FILTER_NON_PLANNED)
 		value := filter != ""
 		t.NonPlanned = value
-		if err != nil {
-			postFilterNameError(w, filterName, err)
-			return
-		}
+	case consts.FILTER_TAGS:
+		tagStr := r.Form.Get(consts.FILTER_TAGS)
+		t.Tags = append(t.Tags, models.TaskTag(tagStr))
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("unknown filter name")
@@ -113,7 +101,7 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 	common.Debug("PostFilterName: %v", t)
 	common.Debug("PostFilterName: %v", filterName)
 
-	drawTaskTable(w, r)
+	drawTaskViewBody(w, r)
 }
 
 func postFilterNameError(w http.ResponseWriter, filterName string, err error) {

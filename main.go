@@ -98,18 +98,13 @@ func configureServerMux() {
 	http.HandleFunc("PUT "+consts.URL_TASKS, handlers.PutTaskHandler)
 	http.HandleFunc("POST /tasks/{id}/toggle-completed", handlers.PostTaskToggleCompleted)
 	http.HandleFunc("DELETE "+consts.URL_TASKS_ID, handlers.DeleteTasksId)
-
-	// http.HandleFunc("POST /toggle-completed-filter", handlers.PostFilter)
 	http.HandleFunc("POST /filter/{name}", handlers.PostFilterName)
+	http.HandleFunc("DELETE /filter/tag/{name}", handlers.DeleteTagName)
 	http.HandleFunc("POST /prepared-query/{name}", handlers.PostPreparedQuery)
-
 	http.HandleFunc("POST "+consts.URL_TOGGLE_SORT_TABLE, handlers.PostToggleSortTable)
-
 	http.HandleFunc("GET /view/task/{id}", handlers.GetViewTaskByIdHandler)
 	http.HandleFunc("GET /view/new-task", handlers.GetViewEmptyTask)
-
 	http.HandleFunc("POST /tags", handlers.PostTagsHandler)
-
 	http.Handle("/assets/", http.FileServer(http.FS(assets)))
 }
 

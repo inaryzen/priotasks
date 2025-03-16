@@ -253,8 +253,9 @@ func logQuery(prefix, sql string, args []interface{}) {
 }
 
 func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
-	var args []interface{}
-	sqlQuery := "SELECT " + TASK_COLUMNS + " FROM tasks WHERE 1=1"
+	var args []any
+	sqlQuery := "SELECT " + TASK_COLUMNS + " FROM tasks"
+	sqlQuery += " WHERE 1=1"
 
 	common.Debug("FindTasks: query: %v", query)
 
@@ -288,6 +289,17 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 	}
 	if query.NonPlanned {
 		sqlQuery += " AND planned = 0"
+	}
+	if len(query.Tags) > 0 {
+		sqlQuery += " AND id in ( select task_id from TasksTags where tag_id in ("
+		for i, t := range query.Tags {
+			if i != 0 {
+				sqlQuery += ", "
+			}
+			sqlQuery = sqlQuery + "?"
+			args = append(args, t)
+		}
+		sqlQuery += "))"
 	}
 
 	if query.SortColumn != models.ColumnUndefined {

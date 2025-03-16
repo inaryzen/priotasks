@@ -19,6 +19,7 @@ const (
 )
 
 func (d *DbSQLite) initSettings() {
+	common.Debug("initSettings")
 	_, err := d.instance.Exec(`
 		CREATE TABLE IF NOT EXISTS settings (
 			id TEXT PRIMARY KEY,
@@ -50,7 +51,7 @@ func (d *DbSQLite) initSettings() {
 func (d *DbSQLite) settingsTableAddTagsColumn() {
 	id := "settings_table_add_tags_column"
 	if !d.MigrationExists(id) {
-		_, err := d.instance.Exec("ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ''")
+		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN tags TEXT DEFAULT ''")
 		if err != nil {
 			panic(err)
 		} else {
