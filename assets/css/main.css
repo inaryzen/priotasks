@@ -203,6 +203,45 @@ table #column-completed-status {
     white-space: nowrap;
 }
 
+.filter-panel .tags-filter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-panel .selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-panel .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #404040;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+}
+
+.filter-panel .tag-remove-btn {
+    background: none;
+    border: none;
+    margin-left: 0.25rem;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    font-size: 1.125rem;
+    color: #666;
+}
+
+.filter-panel .tag-remove-btn:hover {
+    color: #ff0000;
+}
+
+.filter-panel .tag-select {
+    min-width: 200px;
+}
+
 /* Modal styles */
 .modal {
     display: flex;
@@ -304,15 +343,33 @@ input[type="text"],
 
 .modal-content .modal-task-priority,
 .modal-content .modal-task-impact,
-.modal-content .modal-task-cost {
-    font-family: "Consolas", "Courier New", Courier, "Lucida Console", monospace;
-    color: #e0e0e0;
+.modal-content .modal-task-cost{
     width: 20%;
+    margin-bottom: 10px;
+
+    /* font-family: "Consolas", "Courier New", Courier, "Lucida Console", monospace;
+    color: #e0e0e0;
+    
     padding: 10px;
     border: 1px solid #404040;
     border-radius: 5px;
     font-size: 1em;
     margin-bottom: 10px;
+    background-color: #333;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 10px; */
+}
+
+.default-select {
+    font-family: "Consolas", "Courier New", Courier, "Lucida Console", monospace;
+    color: #e0e0e0;
+    padding: 10px;
+    border: 1px solid #404040;
+    border-radius: 5px;
+    font-size: 1em;
+    
     background-color: #333;
     appearance: none;
     background-repeat: no-repeat;
@@ -548,42 +605,3 @@ input[type="checkbox"]:checked {
     background-color: #505050;
 }
 
-.filter-panel .tags-filter {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.filter-panel .selected-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.filter-panel .tag-pill {
-    display: inline-flex;
-    align-items: center;
-    background: #404040;
-    padding: 0.25rem 0.5rem;
-    border-radius: 1rem;
-    font-size: 0.875rem;
-}
-
-.filter-panel .tag-remove-btn {
-    background: none;
-    border: none;
-    margin-left: 0.25rem;
-    cursor: pointer;
-    padding: 0 0.25rem;
-    font-size: 1.125rem;
-    color: #666;
-}
-
-.filter-panel .tag-remove-btn:hover {
-    color: #ff0000;
-}
-
-.filter-panel .tag-select {
-    min-width: 150px;
-    padding: 0.25rem;
-}

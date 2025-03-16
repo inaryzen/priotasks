@@ -13,12 +13,12 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 				<input type="hidden" name="card-id" value={ card.Id }/>
 				<div class="modal-title-row">
 					<input type="text" id="card-title" name="card-title" class="modal-task-title" value={ card.Title } placeholder="Card title..."/>
-					<select id="modal-task-priority" name="modal-task-priority" class="modal-task-priority">
+					<select id="modal-task-priority" name="modal-task-priority" class="modal-task-priority default-select">
 						<option
 							value="3"
 							if card.Priority == models.PriorityUrgent {
 								selected
-							}
+							} 
 						>{ models.PriorityUrgent.ToStr() }</option>
 						<option
 							value="2"
@@ -39,7 +39,7 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 							}
 						>{ models.PriorityLow.ToStr() }</option>
 					</select>
-					<select id="modal-task-impact" name="modal-task-impact" class="modal-task-impact">
+					<select id="modal-task-impact" name="modal-task-impact" class="modal-task-impact default-select">
 						<option
 							value="4"
 							if card.Impact == models.ImpactHigh {
@@ -71,7 +71,7 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 							}
 						>{ models.ImpactSlight.ToHumanString() }</option>
 					</select>
-					<select id={ consts.MODAL_TASK_COST_NAME } name={ consts.MODAL_TASK_COST_NAME } class={ consts.MODAL_TASK_COST_NAME }>
+					<select id={ consts.MODAL_TASK_COST_NAME } name={ consts.MODAL_TASK_COST_NAME } class="modal-task-cost default-select">
 						<option
 							value={ strconv.Itoa(int(models.CostXS)) }
 							if card.Cost == models.CostXS {
