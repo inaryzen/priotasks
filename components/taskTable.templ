@@ -1,0 +1,102 @@
+package components
+
+import (
+	"fmt"
+	"github.com/inaryzen/priotasks/models"
+)
+
+templ TaskTable(cards []models.Task, st models.Settings) {
+	<table id="cards-table">
+		<colgroup>
+			<col style="width: 60px;"/>
+			<col style="width: 150px;"/> // Tags
+			<col style="width: 500px;"/>
+			<col style="width: 60px;"/>
+			<col style="width: 140px;"/>
+			<col style="width: 160px;"/> // Impact
+			<col style="width: 60px;"/> // WIP
+			<col style="width: 60px;"/> // Planned
+			<col style="width: 120px;"/> // Value
+			<col style="width: 200px;"/>
+			<col style="width: 200px;"/>
+			<col style="width: 200px;"/>
+			<col style="width: 60px;"/>
+			<col style="width: auto;"/>
+		</colgroup>
+		<thead>
+			<tr>
+				<th>Done</th>
+				<th>Tags</th>
+				<th>Title</th>
+				@SortableHeader(st, models.ColumnCost)
+				@SortableHeader(st, models.Priority)
+				@SortableHeader(st, models.ColumnImpact)
+				@SortableHeader(st, models.ColumnWip)
+				@SortableHeader(st, models.ColumnPlanned)
+				@SortableHeader(st, models.ColumnValue)
+				@SortableHeader(st, models.Completed)
+				@SortableHeader(st, models.Created)
+				<th>Updated</th>
+				<th></th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, c := range cards {
+				<tr>
+					<td id="column-completed-status">
+						<input
+							if c.IsCompleted() {
+								checked
+							}
+							name="card-completed"
+							type="checkbox"
+							hx-trigger="change"
+							hx-post={ string(templ.URL(fmt.Sprintf("/tasks/%s/toggle-completed", c.Id))) }
+						/>
+					</td>
+					<td id="column-tags" class="column-tags">
+						for _, tag := range c.Tags {
+							<span class="tag-pill">{ string(tag) }</span>
+						}
+					</td>
+					<td id="column-title" class="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
+					<td id="column-impact">{ c.Cost.ToHumanString() }</td>
+					<td id="column-priority">{ c.Priority.ToStr() }</td>
+					<td id="column-impact">{ c.Impact.ToHumanString() }</td>
+					<td id="column-wip" class="status-column">
+						if c.Wip {
+							<span title="Work in Progress">🏗️</span>
+						}
+					</td>
+					<td id="column-planned" class="status-column">
+						if c.Planned {
+							<span title="Planned">📅</span>
+						}
+					</td>
+					<td id="column-value">
+						{ c.ValueAsHumanStr() }
+					</td>
+					<td id="column-completed">
+						if c.IsCompleted() {
+							{ c.Completed.Format("2006-01-02 15:04:05") }
+						}
+					</td>
+					<td id="column-created">{ c.Created.Format("2006-01-02 15:04:05") }</td>
+					<td id="column-updated">{ c.Updated.Format("2006-01-02 15:04:05") }</td>
+					<td id="column-delete">
+						<button
+							type="button"
+							class="btn-delete"
+							hx-delete={ string(templ.URL(fmt.Sprintf("/tasks/%s", c.Id))) }
+							hx-target="#cards-table"
+							hx-swap="innerHTML"
+							title="Delete Task"
+						>🗑️</button>
+					</td>
+					<td></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}

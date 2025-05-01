@@ -1,0 +1,21 @@
+package components
+
+import (
+	"github.com/inaryzen/priotasks/models"
+)
+
+templ TasksView(cards []models.Task, st models.Settings, allTags []models.TaskTag) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link rel="icon" href="/assets/fav/favicon-32x32.png" type="image/png"/>
+			<title>Tasks</title>
+			<script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.js" integrity="sha384-BBDmZzVt6vjz5YbQqZPtFZW82o8QotoM7RUp5xOxV3nSJ8u2pSdtzFAbGKzTlKtg" crossorigin="anonymous"></script>
+			<script src="/assets/js/main.js"></script>
+			<link rel="stylesheet" href="/assets/css/main.css"/>
+		</head>
+		@TasksViewBody(cards, st, allTags)
+	</html>
+}

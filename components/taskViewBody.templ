@@ -1,0 +1,35 @@
+package components
+
+import (
+	"github.com/inaryzen/priotasks/consts"
+	"github.com/inaryzen/priotasks/models"
+)
+
+templ TasksViewBody(cards []models.Task, st models.Settings, allTags []models.TaskTag) {
+	<body>
+		<div class="container">
+			<header>
+				<nav>
+					<ul>
+						<li><a hx-get="/view/new-task" hx-target="#modal-card" hx-swap="outerHTML" hx-trigger="click, keydown[ctrlKey&&shiftKey&&key=='N'] from:body">New</a></li>
+						<li><a href="/tasks">List</a></li>
+						<li class="nav-bar-dropdown">
+							<a href="#">Filters</a>
+							<div class="dropdown-content">
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_YESTERDAY } hx-target="body">Completed Yesterday</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_TODAY } hx-target="body">Completed Today</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_THIS_WEEK } hx-target="body">Completed This Week</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_WEEK } hx-target="body">Completed Last Week</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_COMPLETED_LAST_TWO_WEEKS } hx-target="body">Completed Last Two Weeks</a>
+								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_RESET } hx-target="body">Reset Filters</a>
+							</div>
+						</li>
+					</ul>
+				</nav>
+			</header>
+			@FilterPanel(st, allTags)
+			@TaskTable(cards, st)
+		</div>
+		<div id="modal-card"></div>
+	</body>
+}
