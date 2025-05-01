@@ -21,6 +21,13 @@ const TITLE_MAX_SIZE = 64
 
 type TaskTag string
 
+// TODO Remove EMPTY_TAG
+const EMPTY_TAG TaskTag = ""
+
+func (t TaskTag) IsEmpty() bool {
+	return t == EMPTY_TAG
+}
+
 type TaskPriority int
 
 const (

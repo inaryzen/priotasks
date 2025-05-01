@@ -35,6 +35,7 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		internalServerError(w, err)
+		return
 	}
 
 	r.ParseForm()
@@ -88,19 +89,29 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 		t.NonPlanned = value
 	case consts.FILTER_TAGS:
 		tagStr := r.Form.Get(consts.FILTER_TAGS)
+		if tagStr == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		t.Tags = append(t.Tags, models.TaskTag(tagStr))
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("unknown filter name")
+		return
 	}
 
 	s.TasksQuery = t
-	services.UpdateUserSettings(s)
+	err = services.UpdateUserSettings(s)
+	if err != nil {
+		internalServerError(w, err)
+		return
+	}
 
 	common.Debug("PostFilterName: %v", s)
 	common.Debug("PostFilterName: %v", t)
 	common.Debug("PostFilterName: %v", filterName)
 
+	w.WriteHeader(http.StatusOK)
 	drawTaskViewBody(w, r)
 }
 

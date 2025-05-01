@@ -140,7 +140,7 @@ func resolveTaskFromForm(r *http.Request) (models.Task, []models.TaskTag) {
 	}
 
 	var taskTags []models.TaskTag
-	for key, _ := range r.Form {
+	for key := range r.Form {
 		tag, found := strings.CutPrefix(key, "tag-")
 		if found {
 			taskTags = append(taskTags, models.TaskTag(tag))

@@ -1,10 +1,15 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/models"
+)
+
+var (
+	ErrEmptyTag = errors.New("empty tag is not allowed")
 )
 
 func Tags() ([]models.TaskTag, error) {
@@ -17,6 +22,9 @@ func Tags() ([]models.TaskTag, error) {
 }
 
 func SaveTag(tag models.TaskTag) error {
+	if tag.IsEmpty() {
+		return ErrEmptyTag
+	}
 	err := db.DB().SaveTag(string(tag))
 	if err != nil {
 		return fmt.Errorf("SaveTag: error tag=%v: %w", tag, err)
@@ -26,6 +34,9 @@ func SaveTag(tag models.TaskTag) error {
 }
 
 func AddTagToTask(taskId string, tag models.TaskTag) error {
+	if tag.IsEmpty() {
+		return ErrEmptyTag
+	}
 	err := db.DB().AddTagToTask(taskId, string(tag))
 	if err != nil {
 		return fmt.Errorf("AddTagToTask: error tag=%v; taskId=%v: %w", tag, taskId, err)
@@ -35,6 +46,9 @@ func AddTagToTask(taskId string, tag models.TaskTag) error {
 }
 
 func DeleteTag(tag models.TaskTag) error {
+	if tag.IsEmpty() {
+		return ErrEmptyTag
+	}
 	return nil
 }
 
@@ -47,6 +61,9 @@ func TaskTags(taskId string) ([]models.TaskTag, error) {
 }
 
 func RemoveTagFromTask(taskId string, tag models.TaskTag) error {
+	if tag.IsEmpty() {
+		return ErrEmptyTag
+	}
 	err := db.DB().DeleteTagFromTask(taskId, string(tag))
 	if err != nil {
 		return fmt.Errorf("RemoveTagFromTask: taskId=%v, tag=%v: %w", taskId, tag, err)

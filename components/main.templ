@@ -277,7 +277,7 @@ templ FilterPanel(st models.Settings, allTags []models.TaskTag) {
 					hx-post={ "/filter/" + consts.FILTER_TAGS }
 					hx-target="body"
 				>
-					<option value="">Select a tag...</option>
+					<option value="" disabled selected>Select a tag...</option>
 					for _, tag := range allTags {
 						<option value={ string(tag) }>{ string(tag) }</option>
 					}
