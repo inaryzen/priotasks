@@ -29,6 +29,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 	<table id="cards-table">
 		<colgroup>
 			<col style="width: 60px;"/>
+			<col style="width: 150px;"/> // Tags
 			<col style="width: 500px;"/>
 			<col style="width: 60px;"/>
 			<col style="width: 140px;"/>
@@ -45,6 +46,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 		<thead>
 			<tr>
 				<th>Done</th>
+				<th>Tags</th>
 				<th>Title</th>
 				@SortableHeader(st, models.ColumnCost)
 				@SortableHeader(st, models.Priority)
@@ -72,6 +74,11 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 							hx-trigger="change"
 							hx-post={ string(templ.URL(fmt.Sprintf("/tasks/%s/toggle-completed", c.Id))) }
 						/>
+					</td>
+					<td id="column-tags" class="column-tags">
+						for _, tag := range c.Tags {
+							<span class="tag-pill">{ string(tag) }</span>
+						}
 					</td>
 					<td id="column-title" class="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
 					<td id="column-impact">{ c.Cost.ToHumanString() }</td>

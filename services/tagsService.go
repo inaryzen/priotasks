@@ -53,3 +53,11 @@ func RemoveTagFromTask(taskId string, tag models.TaskTag) error {
 	}
 	return nil
 }
+
+func TasksTags(taskIds []string) (map[string][]models.TaskTag, error) {
+	tags, err := db.DB().TasksTags(taskIds)
+	if err != nil {
+		return nil, fmt.Errorf("TasksTags: failed to get tags for tasks: %w", err)
+	}
+	return tags, nil
+}

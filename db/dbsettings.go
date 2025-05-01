@@ -32,8 +32,7 @@ func (d *DbSQLite) initSettings() {
 			filter_wip BOOLEAN,
 			filter_non_wip BOOLEAN,
 			planned BOOLEAN,
-			non_planned BOOLEAN,
-			tags TEXT
+			non_planned BOOLEAN
 		);
 	`)
 	if err != nil {

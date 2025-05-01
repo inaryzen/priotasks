@@ -27,6 +27,7 @@ func (d *DbSQLite) Init(dbFile string) {
 		}
 		dbFile = filepath.Join(dir, "db.sqlite")
 	}
+	common.Debug("Init: dbFile=%v", dbFile)
 
 	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {

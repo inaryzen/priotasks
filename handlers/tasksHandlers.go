@@ -218,7 +218,7 @@ func drawTaskViewBody(w http.ResponseWriter, r *http.Request) {
 }
 
 func drawTaskView(w http.ResponseWriter, r *http.Request) {
-	cards, err := findTasksOrWriteError(w)
+	tasks, err := findTasksOrWriteError(w)
 	if err != nil {
 		return
 	}
@@ -230,7 +230,7 @@ func drawTaskView(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		internalServerError(w, err)
 	}
-	cardsView := components.TasksView(cards, settings, tags)
+	cardsView := components.TasksView(tasks, settings, tags)
 	cardsView.Render(r.Context(), w)
 }
 

@@ -622,7 +622,7 @@ func TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mod
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if card == models.EMPTY_TASK {
+			if card.IsEmpty() {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, " hx-post=\"/tasks\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

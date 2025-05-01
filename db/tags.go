@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/inaryzen/priotasks/common"
@@ -55,7 +56,7 @@ func (d *DbSQLite) addTagsTable() {
 
 func (d *DbSQLite) SaveTag(tagId string) error {
 	sql := "INSERT INTO tags (" + TAGS_COLUMNS + ") " + " VALUES (?, ?)"
-	args := []interface{}{
+	args := []any{
 		tagId,
 		time.Now().Format(consts.DEFAULT_TIME_FORMAT),
 	}
@@ -146,6 +147,46 @@ func (d *DbSQLite) TaskTags(taskId string) ([]models.TaskTag, error) {
 	}
 
 	return tags, nil
+}
+
+func (d *DbSQLite) TasksTags(taskIds []string) (map[string][]models.TaskTag, error) {
+	result := make(map[string][]models.TaskTag)
+	if len(taskIds) == 0 {
+		return result, nil
+	}
+
+	placeholders := make([]string, len(taskIds))
+	args := make([]any, len(taskIds))
+	for i, id := range taskIds {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+
+	sql := fmt.Sprintf("SELECT %s FROM TasksTags WHERE task_id IN (%s)",
+		TASKS_TAGS_COLUMNS,
+		strings.Join(placeholders, ","))
+
+	logQuery("TasksTags", sql, args)
+
+	rows, err := d.instance.Query(sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("TasksTags: failed to query tags for tasks: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var taskId, tagId string
+		if err := rows.Scan(&taskId, &tagId); err != nil {
+			return nil, fmt.Errorf("TasksTags: failed to scan tag: %w", err)
+		}
+		result[taskId] = append(result[taskId], models.TaskTag(tagId))
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("TasksTags: error iterating tags: %w", err)
+	}
+
+	return result, nil
 }
 
 func (d *DbSQLite) Tags() ([]models.TaskTag, error) {

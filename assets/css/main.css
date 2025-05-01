@@ -469,6 +469,12 @@ th.sortable-header:hover {
     text-overflow: ellipsis;
 }
 
+.column-tags {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Additional dark mode specific styles */
 a {
     color: #4dabf5;

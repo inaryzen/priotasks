@@ -174,7 +174,7 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 					<button
 						type="button"
 						class="btn-save"
-						if card == models.EMPTY_TASK {
+						if card.IsEmpty() {
 							hx-post="/tasks"
 						} else {
 							hx-put="/tasks"

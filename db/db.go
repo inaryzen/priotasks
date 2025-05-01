@@ -33,6 +33,7 @@ type Db interface {
 	DeleteTagFromTask(taskId, tagId string) error
 	TaskTags(taskId string) ([]models.TaskTag, error)
 	Tags() ([]models.TaskTag, error)
+	TasksTags(taskIds []string) (map[string][]models.TaskTag, error)
 }
 
 func SetDB(db Db) {

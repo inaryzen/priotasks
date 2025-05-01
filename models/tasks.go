@@ -142,6 +142,7 @@ type Task struct {
 	Impact    TaskImpact
 	Cost      TaskCost
 	Value     float32
+	Tags      []TaskTag
 }
 
 func titleFromContent(content string) string {
@@ -201,6 +202,7 @@ func (c Task) Update(change Task) Task {
 		Impact:    change.Impact,
 		Cost:      change.Cost,
 		Value:     change.Value,
+		Tags:      change.Tags,
 	}
 }
 
@@ -253,4 +255,17 @@ func (c Task) ValueAsHumanStr() string {
 	}
 
 	return "???"
+}
+
+func (t Task) IsEmpty() bool {
+	return t.Title == EMPTY_TASK.Title &&
+		t.Content == EMPTY_TASK.Content &&
+		t.Priority == EMPTY_TASK.Priority &&
+		t.Impact == EMPTY_TASK.Impact &&
+		t.Cost == EMPTY_TASK.Cost &&
+		t.Value == EMPTY_TASK.Value &&
+		!t.Wip &&
+		!t.Planned &&
+		len(t.Tags) == 0 &&
+		t.Completed == NOT_COMPLETED
 }

@@ -111,6 +111,20 @@ func (m *MockDB) RecordMigration(id string) {
 	m.migrations[id] = true
 }
 
+func (m *MockDB) TasksTags(taskIds []string) (map[string][]models.TaskTag, error) {
+	result := make(map[string][]models.TaskTag)
+	if m.taskTags == nil {
+		return result, nil
+	}
+	
+	for _, taskId := range taskIds {
+		if tags, exists := m.taskTags[taskId]; exists {
+			result[taskId] = tags
+		}
+	}
+	return result, nil
+}
+
 func setupTestDB() *MockDB {
 	mockDB := &MockDB{
 		tasks:      make(map[string]models.Task),

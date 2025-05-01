@@ -14,6 +14,21 @@ func FindTasks(query models.TasksQuery) ([]models.Task, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve tasks: %w", err)
 	}
+
+	taskIds := make([]string, len(tasks))
+	for i, task := range tasks {
+		taskIds[i] = task.Id
+	}
+
+	taskTags, err := db.DB().TasksTags(taskIds)
+	if err != nil {
+		return nil, fmt.Errorf("FindTasks: failed to retrieve task tags: %w", err)
+	}
+
+	for i := range tasks {
+		tasks[i].Tags = taskTags[tasks[i].Id]
+	}
+
 	return tasks, nil
 }
 
@@ -42,7 +57,7 @@ func DeleteAllTasks() error {
 func UpdateTask(changed models.Task, changedTags []models.TaskTag) error {
 	orig, err := db.DB().FindTask(changed.Id)
 	if err != nil {
-		log.Printf("failed to find the record: %s: %s", changed.Id, err)
+		log.Printf("UpdateTask: failed to find the record: %s: %s", changed.Id, err)
 		return err
 	}
 	orig = orig.Update(changed)
