@@ -260,3 +260,19 @@ func PostToggleSortTable(w http.ResponseWriter, r *http.Request) {
 
 	drawTaskTable(w, r)
 }
+
+func PostReducePriorityHandler(w http.ResponseWriter, r *http.Request) {
+	settings, err := findSettingsOrWriteError(w)
+	if err != nil {
+		return
+	}
+
+	err = services.ReducePriorityForVisibleTasks(settings.TasksQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	drawTaskViewBody(w, r)
+}

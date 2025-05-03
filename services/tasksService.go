@@ -148,3 +148,21 @@ func FlipTask(card models.Task) error {
 	}
 	return nil
 }
+
+func ReducePriorityForVisibleTasks(query models.TasksQuery) error {
+	tasks, err := FindTasks(query)
+	if err != nil {
+		return fmt.Errorf("ReducePriorityForVisibleTasks: failed to retrieve tasks: %w", err)
+	}
+
+	for _, task := range tasks {
+		newPriority := task.Priority.Reduce()
+		if newPriority != task.Priority {
+			task.Priority = newPriority
+			if err := SaveTask(task); err != nil {
+				return fmt.Errorf("ReducePriorityForVisibleTasks: failed to save task %s: %w", task.Id, err)
+			}
+		}
+	}
+	return nil
+}

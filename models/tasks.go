@@ -61,6 +61,19 @@ func (p TaskPriority) ToStr() string {
 	}
 }
 
+func (p TaskPriority) Reduce() TaskPriority {
+	switch p {
+	case PriorityUrgent:
+		return PriorityHigh
+	case PriorityHigh:
+		return PriorityMedium
+	case PriorityMedium:
+		return PriorityLow
+	default:
+		return p
+	}
+}
+
 type TaskImpact int
 
 const (

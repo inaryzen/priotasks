@@ -24,6 +24,12 @@ templ TasksViewBody(cards []models.Task, st models.Settings, allTags []models.Ta
 								<a hx-post={ "/prepared-query/" + consts.PREPARED_QUERY_RESET } hx-target="body">Reset Filters</a>
 							</div>
 						</li>
+						<li class="nav-bar-dropdown">
+							<a href="#">Operations</a>
+							<div class="dropdown-content">
+								<a hx-post="/tasks/reduce-priority" hx-target="body">Reduce Priority</a>
+							</div>
+						</li>
 					</ul>
 				</nav>
 			</header>

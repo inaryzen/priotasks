@@ -331,3 +331,112 @@ func TestUpdateTaskTags(t *testing.T) {
 		})
 	}
 }
+
+type reducePriorityMockDB struct {
+	db.NoOpDB
+	expectedTasks []models.Task
+	savedTasks    []models.Task
+}
+
+func (m *reducePriorityMockDB) FindTasks(query models.TasksQuery) ([]models.Task, error) {
+	return m.expectedTasks, nil
+}
+
+func (m *reducePriorityMockDB) SaveTask(task models.Task) error {
+	m.savedTasks = append(m.savedTasks, task)
+	return nil
+}
+
+func TestReducePriorityForVisibleTasks(t *testing.T) {
+	tests := []struct {
+		name          string
+		tasks         []models.Task
+		query         models.TasksQuery
+		expectedSaves map[string]models.TaskPriority // map of task ID to expected priority after save
+	}{
+		{
+			name: "reduce priorities for all visible tasks",
+			tasks: []models.Task{
+				{Id: "1", Priority: models.PriorityUrgent},
+				{Id: "2", Priority: models.PriorityHigh},
+				{Id: "3", Priority: models.PriorityMedium},
+				{Id: "4", Priority: models.PriorityLow},
+			},
+			query: models.TasksQuery{},
+			expectedSaves: map[string]models.TaskPriority{
+				"1": models.PriorityHigh,
+				"2": models.PriorityMedium,
+				"3": models.PriorityLow,
+			},
+		},
+		{
+			name:          "empty task list",
+			tasks:         []models.Task{},
+			query:         models.TasksQuery{},
+			expectedSaves: map[string]models.TaskPriority{},
+		},
+		{
+			name: "all tasks already at minimum priority",
+			tasks: []models.Task{
+				{Id: "1", Priority: models.PriorityLow},
+				{Id: "2", Priority: models.PriorityLow},
+			},
+			query:         models.TasksQuery{},
+			expectedSaves: map[string]models.TaskPriority{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDB := &reducePriorityMockDB{
+				expectedTasks: tt.tasks,
+			}
+			db.SetDB(mockDB)
+
+			err := ReducePriorityForVisibleTasks(tt.query)
+			if err != nil {
+				t.Fatalf("ReducePriorityForVisibleTasks failed: %v", err)
+			}
+
+			// Verify that only tasks that needed priority reduction were saved
+			if len(mockDB.savedTasks) != len(tt.expectedSaves) {
+				t.Errorf("Expected %d saves, got %d", len(tt.expectedSaves), len(mockDB.savedTasks))
+			}
+
+			// Create a map of saved tasks by ID for easier lookup
+			savedTasksMap := make(map[string]models.Task)
+			for _, task := range mockDB.savedTasks {
+				savedTasksMap[task.Id] = task
+			}
+
+			// Verify each expected save
+			for taskID, expectedPriority := range tt.expectedSaves {
+				savedTask, exists := savedTasksMap[taskID]
+				if !exists {
+					t.Errorf("Expected task %s to be saved with priority %v, but it wasn't saved",
+						taskID, expectedPriority)
+					continue
+				}
+
+				if savedTask.Priority != expectedPriority {
+					t.Errorf("Task %s: expected saved priority %v, got %v",
+						taskID, expectedPriority, savedTask.Priority)
+				}
+			}
+
+			// Verify no unexpected saves occurred
+			for _, savedTask := range mockDB.savedTasks {
+				expectedPriority, shouldBeSaved := tt.expectedSaves[savedTask.Id]
+				if !shouldBeSaved {
+					t.Errorf("Task %s was saved but shouldn't have been", savedTask.Id)
+					continue
+				}
+
+				if savedTask.Priority != expectedPriority {
+					t.Errorf("Task %s: wrong priority saved. Expected %v, got %v",
+						savedTask.Id, expectedPriority, savedTask.Priority)
+				}
+			}
+		})
+	}
+}

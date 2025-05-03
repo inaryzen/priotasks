@@ -106,6 +106,7 @@ func configureServerMux() {
 	http.HandleFunc("GET /view/new-task", handlers.GetViewEmptyTask)
 	http.HandleFunc("POST /tags", handlers.PostTagsHandler)
 	http.HandleFunc("DELETE /tags/{name}", handlers.DeleteTagHandler)
+	http.HandleFunc("POST /tasks/reduce-priority", handlers.PostReducePriorityHandler)
 	http.Handle("/assets/", http.FileServer(http.FS(assets)))
 }
 
