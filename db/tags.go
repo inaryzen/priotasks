@@ -122,6 +122,37 @@ func (d *DbSQLite) DeleteTagFromTask(taskId, tagId string) error {
 	return nil
 }
 
+func (d *DbSQLite) DeleteTagFromAllTasks(tagId string) error {
+	sql := "DELETE FROM TasksTags WHERE tag_id = ?"
+	args := []any{tagId}
+	logQuery("DeleteTagFromAllTasks", sql, args)
+
+	_, err := d.instance.Exec(sql, args...)
+	if err != nil {
+		return fmt.Errorf("DeleteTagFromAllTasks: failed to delete tag associations; tagId=%v; %w", tagId, err)
+	}
+	return nil
+}
+
+func (d *DbSQLite) DeleteTag(tagId string) error {
+	sql := "DELETE FROM tags WHERE id = ?"
+	args := []any{tagId}
+	logQuery("DeleteTag", sql, args)
+
+	result, err := d.instance.Exec(sql, args...)
+	if err != nil {
+		return fmt.Errorf("DeleteTag: error; tagId=%v; %w", tagId, err)
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("DeleteTag: failed to get affected rows; tagId=%v; %w", tagId, err)
+	}
+	if affected == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
 func (d *DbSQLite) TaskTags(taskId string) ([]models.TaskTag, error) {
 	sql := "SELECT " + TASKS_TAGS_COLUMNS + " FROM TasksTags WHERE task_id = ?"
 	args := []interface{}{taskId}

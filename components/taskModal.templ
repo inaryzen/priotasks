@@ -113,11 +113,7 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 				<textarea id="card-text" name="card-text" class="modal-task-text" rows="10" placeholder="Write your text here...">{ card.Content }</textarea>
 				<div class="tags-list">
 					<div class="tags-list-header">Tags</div>
-					<div id="tags-list-content" class="tags-list-content">
-						for _, tag := range allTags {
-							@TaskModalTag(tag, taskTags[tag])
-						}
-					</div>
+					@TagsListContent(card, taskTags, allTags)
 				</div>
 				<div class="add-tag-container">
 					<input
@@ -202,12 +198,30 @@ templ ModalTaskForm(card models.Task) {
 }
 
 templ TaskModalTag(tag models.TaskTag, selected bool) {
-	<label class="tag-item">
+	<div class="tag-item">
 		<input
 			type="checkbox"
+			id={ "tag-" + string(tag) }
 			name={ "tag-" + string(tag) }
 			checked?={ selected }
 		/>
-		{ string(tag) }
-	</label>
+		<label for={ "tag-" + string(tag) } class="tag-label">
+			{ string(tag) }
+		</label>
+		<button 
+			type="button" 
+			class="tag-delete-btn"
+			hx-delete={ "/tags/" + string(tag) }
+			hx-confirm="Are you sure you want to delete this tag?"
+			hx-target="#tags-list-content"
+			hx-swap="outerHTML">🗑️</button>
+	</div>
+}
+
+templ TagsListContent(card models.Task, taskTags map[models.TaskTag]bool, allTags []models.TaskTag) {
+	<div id="tags-list-content" class="tags-list-content">
+		for _, tag := range allTags {
+			@TaskModalTag(tag, taskTags[tag])
+		}
+	</div>
 }

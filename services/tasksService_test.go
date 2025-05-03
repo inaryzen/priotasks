@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"slices"
+
 	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/models"
-	"slices"
 )
 
 // MockDB implements db.Db interface for testing
@@ -16,6 +17,9 @@ type MockDB struct {
 	tags       map[string]bool
 	taskTags   map[string][]models.TaskTag
 }
+
+func (m *MockDB) DeleteTag(tagId string) error             { return nil }
+func (m *MockDB) DeleteTagFromAllTasks(tagId string) error { return nil }
 
 func (m *MockDB) Init(p string) {}
 func (m *MockDB) Close()        {}
@@ -116,7 +120,7 @@ func (m *MockDB) TasksTags(taskIds []string) (map[string][]models.TaskTag, error
 	if m.taskTags == nil {
 		return result, nil
 	}
-	
+
 	for _, taskId := range taskIds {
 		if tags, exists := m.taskTags[taskId]; exists {
 			result[taskId] = tags

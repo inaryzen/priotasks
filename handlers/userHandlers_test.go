@@ -32,6 +32,9 @@ func (m *MockDB) TasksTags(taskIds []string) (map[string][]models.TaskTag, error
 func (m *MockDB) MigrationExists(id string) bool                                  { return false }
 func (m *MockDB) RecordMigration(id string)                                       {}
 
+func (m *MockDB) DeleteTag(tagId string) error             { return nil }
+func (m *MockDB) DeleteTagFromAllTasks(tagId string) error { return nil }
+
 func (m *MockDB) FindSettings(settingsId string) (models.Settings, error) {
 	return m.settings, nil
 }

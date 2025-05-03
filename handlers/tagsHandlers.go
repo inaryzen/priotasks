@@ -19,3 +19,23 @@ func PostTagsHandler(w http.ResponseWriter, r *http.Request) {
 	tagComponent := components.TaskModalTag(newTag, false)
 	tagComponent.Render(r.Context(), w)
 }
+
+func DeleteTagHandler(w http.ResponseWriter, r *http.Request) {
+	tagName := r.PathValue("name")
+	err := services.DeleteTag(models.TaskTag(tagName))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Re-render the tags list
+	allTags, err := services.Tags()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Re-render the tags list content
+	newContent := components.TagsListContent(models.EMPTY_TASK, nil, allTags)
+	newContent.Render(r.Context(), w)
+}

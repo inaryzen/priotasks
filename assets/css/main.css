@@ -279,11 +279,6 @@ table #column-completed-status {
     flex-direction: column;
 }
 
-/* .modal-content label {
-    font-weight: bold;
-    margin-bottom: 5px;
-} */
-
 input[type="text"],
 .modal-content textarea,
 #card-title {
@@ -346,20 +341,6 @@ input[type="text"],
 .modal-content .modal-task-cost{
     width: 20%;
     margin-bottom: 10px;
-
-    /* font-family: "Consolas", "Courier New", Courier, "Lucida Console", monospace;
-    color: #e0e0e0;
-    
-    padding: 10px;
-    border: 1px solid #404040;
-    border-radius: 5px;
-    font-size: 1em;
-    margin-bottom: 10px;
-    background-color: #333;
-    appearance: none;
-    background-repeat: no-repeat;
-    background-position: right 10px top 50%;
-    background-size: 10px; */
 }
 
 .default-select {
@@ -569,6 +550,7 @@ input[type="checkbox"]:checked {
 .tag-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 6px 8px;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -578,8 +560,25 @@ input[type="checkbox"]:checked {
     background-color: #404040;
 }
 
-.tag-item input[type="checkbox"] {
-    margin-right: 8px;
+.tag-label {
+    flex: 1;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.tag-delete-btn {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0 4px;
+    margin-left: auto;
+    font-size: 1em;
+    transition: color 0.2s;
+}
+
+.tag-delete-btn:hover {
+    color: #ff4444;
 }
 
 .add-tag-container {

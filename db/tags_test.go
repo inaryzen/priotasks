@@ -257,3 +257,92 @@ func TestTasksTags_NonExistentTasks(t *testing.T) {
 		t.Errorf("expected empty result for non-existent task, got %d entries", len(result))
 	}
 }
+
+func TestDeleteTagFromAllTasks_Success(t *testing.T) {
+	db := setupTestDB(t)
+
+	// Create tasks
+	tasks := []models.Task{
+		{Id: uuid.New().String(), Title: "Task 1"},
+		{Id: uuid.New().String(), Title: "Task 2"},
+		{Id: uuid.New().String(), Title: "Task 3"},
+	}
+	for _, task := range tasks {
+		if err := db.SaveTask(task); err != nil {
+			t.Fatalf("failed to create task %s: %v", task.Id, err)
+		}
+	}
+
+	// Create and save a tag
+	tag := "test-tag"
+	if err := db.SaveTag(tag); err != nil {
+		t.Fatalf("failed to save tag: %v", err)
+	}
+
+	// Add tag to all tasks
+	for _, task := range tasks {
+		if err := db.AddTagToTask(task.Id, tag); err != nil {
+			t.Fatalf("failed to add tag to task %s: %v", task.Id, err)
+		}
+	}
+
+	// Delete tag from all tasks
+	if err := db.DeleteTagFromAllTasks(tag); err != nil {
+		t.Fatalf("DeleteTagFromAllTasks failed: %v", err)
+	}
+
+	// Verify tag was removed from all tasks
+	for _, task := range tasks {
+		taskTags, err := db.TaskTags(task.Id)
+		if err != nil {
+			t.Fatalf("failed to get tags for task %s: %v", task.Id, err)
+		}
+		if len(taskTags) != 0 {
+			t.Errorf("expected 0 tags for task %s after deletion, got %d", task.Id, len(taskTags))
+		}
+	}
+}
+
+func TestDeleteTagFromAllTasks_NonExistentTag(t *testing.T) {
+	db := setupTestDB(t)
+
+	// Should not return error for non-existent tag
+	err := db.DeleteTagFromAllTasks("non-existent-tag")
+	if err != nil {
+		t.Errorf("expected no error for non-existent tag, got: %v", err)
+	}
+}
+
+func TestDeleteTag_Success(t *testing.T) {
+	db := setupTestDB(t)
+
+	// Create and save a tag
+	tag := "test-tag"
+	if err := db.SaveTag(tag); err != nil {
+		t.Fatalf("failed to save tag: %v", err)
+	}
+
+	// Delete the tag
+	if err := db.DeleteTag(tag); err != nil {
+		t.Fatalf("DeleteTag failed: %v", err)
+	}
+
+	// Verify tag was deleted by checking Tags list
+	tags, err := db.Tags()
+	if err != nil {
+		t.Fatalf("failed to get tags: %v", err)
+	}
+	if len(tags) != 0 {
+		t.Errorf("expected 0 tags after deletion, got %d", len(tags))
+	}
+}
+
+func TestDeleteTag_NonExistent(t *testing.T) {
+	db := setupTestDB(t)
+
+	// Try to delete non-existent tag
+	err := db.DeleteTag("non-existent-tag")
+	if err != ErrNotFound {
+		t.Errorf("expected ErrNotFound for non-existent tag, got: %v", err)
+	}
+}

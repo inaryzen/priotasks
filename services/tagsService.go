@@ -49,6 +49,17 @@ func DeleteTag(tag models.TaskTag) error {
 	if tag.IsEmpty() {
 		return ErrEmptyTag
 	}
+
+	// Start by removing it from all tasks
+	if err := db.DB().DeleteTagFromAllTasks(string(tag)); err != nil {
+		return fmt.Errorf("DeleteTag: failed to remove tag from tasks: %w", err)
+	}
+
+	// Then delete the tag itself
+	if err := db.DB().DeleteTag(string(tag)); err != nil {
+		return fmt.Errorf("DeleteTag: failed to delete tag: %w", err)
+	}
+
 	return nil
 }
 
