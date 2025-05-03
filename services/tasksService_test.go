@@ -10,19 +10,14 @@ import (
 	"github.com/inaryzen/priotasks/models"
 )
 
-// MockDB implements db.Db interface for testing
 type MockDB struct {
+	db.NoOpDB
 	tasks      map[string]models.Task
 	migrations map[string]bool
 	tags       map[string]bool
 	taskTags   map[string][]models.TaskTag
 }
 
-func (m *MockDB) DeleteTag(tagId string) error             { return nil }
-func (m *MockDB) DeleteTagFromAllTasks(tagId string) error { return nil }
-
-func (m *MockDB) Init(p string) {}
-func (m *MockDB) Close()        {}
 func (m *MockDB) Tasks() ([]models.Task, error) {
 	var result []models.Task
 	for _, value := range m.tasks {
@@ -30,13 +25,6 @@ func (m *MockDB) Tasks() ([]models.Task, error) {
 	}
 	return result, nil
 }
-func (m *MockDB) FindTasks(query models.TasksQuery) ([]models.Task, error) { return nil, nil }
-func (m *MockDB) DeleteTask(taskId string) error                           { return nil }
-func (m *MockDB) DeleteAllTasks() error                                    { return nil }
-func (m *MockDB) FindSettings(settingsId string) (models.Settings, error) {
-	return models.Settings{}, nil
-}
-func (m *MockDB) SaveSettings(s models.Settings) error { return nil }
 
 func (m *MockDB) SaveTag(tagId string) error {
 	if m.tags == nil {

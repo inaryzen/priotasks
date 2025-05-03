@@ -12,28 +12,9 @@ import (
 )
 
 type MockDB struct {
+	db.NoOpDB
 	settings models.Settings
 }
-
-func (m *MockDB) Init(p string)                                                   {}
-func (m *MockDB) Close()                                                          {}
-func (m *MockDB) Tasks() ([]models.Task, error)                                   { return nil, nil }
-func (m *MockDB) FindTasks(query models.TasksQuery) ([]models.Task, error)        { return nil, nil }
-func (m *MockDB) DeleteTask(taskId string) error                                  { return nil }
-func (m *MockDB) DeleteAllTasks() error                                           { return nil }
-func (m *MockDB) FindTask(taskId string) (models.Task, error)                     { return models.Task{}, nil }
-func (m *MockDB) SaveTask(task models.Task) error                                 { return nil }
-func (m *MockDB) SaveTag(tagId string) error                                      { return nil }
-func (m *MockDB) AddTagToTask(taskId, tagId string) error                         { return nil }
-func (m *MockDB) DeleteTagFromTask(taskId, tagId string) error                    { return nil }
-func (m *MockDB) TaskTags(taskId string) ([]models.TaskTag, error)                { return nil, nil }
-func (m *MockDB) Tags() ([]models.TaskTag, error)                                 { return nil, nil }
-func (m *MockDB) TasksTags(taskIds []string) (map[string][]models.TaskTag, error) { return nil, nil }
-func (m *MockDB) MigrationExists(id string) bool                                  { return false }
-func (m *MockDB) RecordMigration(id string)                                       {}
-
-func (m *MockDB) DeleteTag(tagId string) error             { return nil }
-func (m *MockDB) DeleteTagFromAllTasks(tagId string) error { return nil }
 
 func (m *MockDB) FindSettings(settingsId string) (models.Settings, error) {
 	return m.settings, nil
