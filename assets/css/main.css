@@ -302,7 +302,18 @@ input[type="text"],
 
 .form-buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.form-buttons-left {
+    display: flex;
+    gap: 10px;
+}
+
+.form-buttons-right {
+    display: flex;
     gap: 10px;
 }
 
@@ -312,7 +323,7 @@ input[type="text"],
     border-radius: 5px;
     font-size: 1em;
     cursor: pointer;
-    transition: background-color 0.5s;
+    transition: background-color 0.3s;
 }
 
 .btn-save {
@@ -325,8 +336,14 @@ input[type="text"],
     color: white;
 }
 
+.btn-delete {
+    background-color: #c62828;
+    color: white;
+}
+
 .btn-save:hover,
-.btn-cancel:hover {
+.btn-cancel:hover,
+.btn-delete:hover {
     opacity: 0.8;
 }
 

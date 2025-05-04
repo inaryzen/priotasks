@@ -21,7 +21,6 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
 			<col style="width: 200px;"/>
-			<col style="width: 60px;"/>
 			<col style="width: auto;"/>
 		</colgroup>
 		<thead>
@@ -39,7 +38,6 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 				@SortableHeader(st, models.Completed)
 				@SortableHeader(st, models.Created)
 				<th>Updated</th>
-				<th></th>
 				<th></th>
 			</tr>
 		</thead>
@@ -88,17 +86,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 					</td>
 					<td id="column-created">{ c.Created.Format("2006-01-02 15:04:05") }</td>
 					<td id="column-updated">{ c.Updated.Format("2006-01-02 15:04:05") }</td>
-					<td id="column-delete">
-						<button
-							type="button"
-							class="btn-delete"
-							hx-delete={ string(templ.URL(fmt.Sprintf("/tasks/%s", c.Id))) }
-							hx-target="#cards-table"
-							hx-swap="innerHTML"
-							title="Delete Task"
-						>🗑️</button>
-					</td>
-					<td></td>
+						<td></td>
 				</tr>
 			}
 		</tbody>
