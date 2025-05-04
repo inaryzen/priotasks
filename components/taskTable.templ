@@ -53,8 +53,7 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 							}
 							name="card-completed"
 							type="checkbox"
-							hx-trigger="change"
-							hx-post={ string(templ.URL(fmt.Sprintf("/tasks/%s/toggle-completed", c.Id))) }
+							disabled
 						/>
 					</td>
 					<td id="column-tags" class="column-tags">

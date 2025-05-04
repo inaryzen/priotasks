@@ -41,18 +41,18 @@ func DeleteTasksId(w http.ResponseWriter, r *http.Request) {
 	drawTaskTable(w, r)
 }
 
-func PostTaskToggleCompleted(w http.ResponseWriter, r *http.Request) {
-	card, err := resolveTaskOrNotFound(w, r)
-	if err != nil {
-		return
-	}
-	err = services.FlipTask(card)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(err)
-	}
-	w.WriteHeader(http.StatusOK)
-}
+// func PostTaskToggleCompleted(w http.ResponseWriter, r *http.Request) {
+// 	card, err := resolveTaskOrNotFound(w, r)
+// 	if err != nil {
+// 		return
+// 	}
+// 	err = services.FlipTask(card)
+// 	if err != nil {
+// 		w.WriteHeader(http.StatusInternalServerError)
+// 		log.Println(err)
+// 	}
+// 	w.WriteHeader(http.StatusOK)
+// }
 
 func GetViewEmptyTask(w http.ResponseWriter, r *http.Request) {
 	allTags, err := services.Tags()
