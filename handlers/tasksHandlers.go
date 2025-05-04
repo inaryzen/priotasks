@@ -126,7 +126,13 @@ func resolveTaskFromForm(r *http.Request) (models.Task, []models.TaskTag) {
 	formCost := r.FormValue(consts.MODAL_TASK_COST_NAME)
 	cost, err := models.StrToEnum[models.TaskCost](formCost)
 	if err != nil {
-		log.Printf("failed to parse: %v: %v", formCost, err)
+		log.Printf("failed to parse Cost: %v: %v", formCost, err)
+	}
+
+	formFun := r.FormValue("modal-task-fun")
+	fun, err := models.StrToEnum[models.TaskFun](formFun)
+	if err != nil {
+		log.Printf("failed to parse Fun: %v: %v", formFun, err)
 	}
 
 	// Parse checkbox values - they will be "on" if checked, or empty if unchecked
@@ -157,6 +163,7 @@ func resolveTaskFromForm(r *http.Request) (models.Task, []models.TaskTag) {
 		Impact:    impact,
 		Completed: completed,
 		Cost:      cost,
+		Fun:       fun,
 	}, taskTags
 }
 

@@ -13,6 +13,7 @@ var EMPTY_TASK = Task{
 	Priority: PriorityMedium,
 	Impact:   ImpactModerate,
 	Cost:     CostM,
+	Fun:      FunM,
 }
 
 var NOT_COMPLETED time.Time = time.Time{}
@@ -49,13 +50,13 @@ func StrToTaskPriority(a string) (TaskPriority, error) {
 func (p TaskPriority) ToStr() string {
 	switch p {
 	case PriorityUrgent:
-		return "🚨 Urgent"
+		return "XL - 🚨"
 	case PriorityHigh:
-		return "🔥 High"
+		return "L - 🔥"
 	case PriorityMedium:
-		return "🌀 Medium"
+		return "M - 🌀"
 	case PriorityLow:
-		return "⌛ Low"
+		return "S - ⌛"
 	default:
 		return "Unknown"
 	}
@@ -96,15 +97,15 @@ func StrToImpact(a string) (TaskImpact, error) {
 func (i TaskImpact) ToHumanString() string {
 	switch i {
 	case ImpactHigh:
-		return "XL - 🌟🌟🌟🌟"
+		return "🌟🌟🌟🌟"
 	case ImpactConsiderable:
-		return "L - 🌟🌟🌟"
+		return "🌟🌟🌟"
 	case ImpactModerate:
-		return "M - 🌟🌟"
+		return "🌟🌟"
 	case ImpactLow:
-		return "S - 🌱"
+		return "🌱"
 	case ImpactSlight:
-		return "XS"
+		return "-"
 	default:
 		return "Unknown"
 	}
@@ -149,6 +150,45 @@ func (i TaskCost) ToHumanString() string {
 	}
 }
 
+type TaskFun int
+
+const (
+	FunS TaskFun = iota
+	FunM
+	FunL
+	FunXL
+)
+
+func (f TaskFun) ToHumanString() string {
+	switch f {
+	case FunS:
+		return "🍀"
+	case FunM:
+		return "🍀🍀"
+	case FunL:
+		return "🍀🍀🍀"
+	case FunXL:
+		return "🍀🍀🍀🍀"
+	default:
+		return "Unknown"
+	}
+}
+
+func (f TaskFun) GetMultiplier() float32 {
+	switch f {
+	case FunS:
+		return 0.75
+	case FunM:
+		return 1.0
+	case FunL:
+		return 1.25
+	case FunXL:
+		return 1.5
+	default:
+		return 1.0
+	}
+}
+
 type Task struct {
 	Id        string
 	Title     string
@@ -161,6 +201,7 @@ type Task struct {
 	Planned   bool
 	Impact    TaskImpact
 	Cost      TaskCost
+	Fun       TaskFun
 	Value     float32
 	Tags      []TaskTag
 }
@@ -221,6 +262,7 @@ func (c Task) Update(change Task) Task {
 		Planned:   change.Planned,
 		Impact:    change.Impact,
 		Cost:      change.Cost,
+		Fun:       change.Fun,
 		Value:     change.Value,
 		Tags:      change.Tags,
 	}
@@ -251,7 +293,7 @@ func (c Task) CalculateValue() Task {
 	}
 
 	baseValue := (float32(c.Impact)*1.1 + 1) * (float32(CostXXL-c.Cost) + 1)
-	c.Value = baseValue * priorityMultipliers[c.Priority]
+	c.Value = baseValue * priorityMultipliers[c.Priority] * c.Fun.GetMultiplier()
 	return c
 }
 
@@ -283,6 +325,7 @@ func (t Task) IsEmpty() bool {
 		t.Priority == EMPTY_TASK.Priority &&
 		t.Impact == EMPTY_TASK.Impact &&
 		t.Cost == EMPTY_TASK.Cost &&
+		t.Fun == EMPTY_TASK.Fun &&
 		t.Value == EMPTY_TASK.Value &&
 		!t.Wip &&
 		!t.Planned &&

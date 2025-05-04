@@ -297,7 +297,7 @@ input[type="text"],
 }
 
 .modal-content .modal-task-title {
-    width: 80%;
+    width: 100%;
 }
 
 .form-buttons {
@@ -338,7 +338,8 @@ input[type="text"],
 
 .modal-content .modal-task-priority,
 .modal-content .modal-task-impact,
-.modal-content .modal-task-cost{
+.modal-content .modal-task-cost,
+.modal-content .modal-task-fun {
     width: 20%;
     margin-bottom: 10px;
 }
@@ -608,5 +609,17 @@ input[type="checkbox"]:checked {
 
 .btn-add-tag:hover {
     background-color: #505050;
+}
+
+/* Select Controls Row */
+.select-controls-row {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.select-controls-row select {
+    flex: 1;
 }
 
