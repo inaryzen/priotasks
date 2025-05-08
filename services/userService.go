@@ -86,20 +86,26 @@ func ApplyPreparedQuery(preparedQueryName string) error {
 	case consts.PREPARED_QUERY_COMPLETED_YESTERDAY:
 		now := time.Now()
 		midnightYesterday := time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 0, 0, now.Location())
+		midnightToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 		q.CompletedFrom = midnightYesterday
+		q.CompletedTo = midnightToday
 		q.FilterIncompleted = true
 		q.FilterCompleted = false
 		q.SortColumn = models.Completed
 	case consts.PREPARED_QUERY_COMPLETED_TODAY:
 		now := time.Now()
 		midnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		nextMidnight := midnight.AddDate(0, 0, 1)
 		q.CompletedFrom = midnight
+		q.CompletedTo = nextMidnight
 		q.FilterIncompleted = true
 		q.FilterCompleted = false
 		q.SortColumn = models.Completed
 	case consts.PREPARED_QUERY_COMPLETED_THIS_WEEK:
 		mondayMidnight := thisMonday()
+		nextMonday := mondayMidnight.AddDate(0, 0, 7)
 		q.CompletedFrom = mondayMidnight
+		q.CompletedTo = nextMonday
 		q.FilterIncompleted = true
 		q.FilterCompleted = false
 		q.SortColumn = models.Completed
@@ -107,12 +113,14 @@ func ApplyPreparedQuery(preparedQueryName string) error {
 		now := time.Now()
 		twoWeeksAgo := time.Date(now.Year(), now.Month(), now.Day()-14, 0, 0, 0, 0, now.Location())
 		q.CompletedFrom = twoWeeksAgo
+		q.CompletedTo = now
 		q.FilterIncompleted = true
 		q.FilterCompleted = false
 		q.SortColumn = models.Completed
 	case consts.PREPARED_QUERY_COMPLETED_LAST_WEEK:
 		previousMonday := thisMonday().AddDate(0, 0, -7)
 		q.CompletedFrom = previousMonday
+		q.CompletedTo = time.Now()
 		q.FilterIncompleted = true
 		q.FilterCompleted = false
 		q.SortColumn = models.Completed

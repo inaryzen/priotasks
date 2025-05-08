@@ -118,9 +118,9 @@ func FilterPanel(st models.Settings, allTags []models.TaskTag) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT))
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(st.TasksQuery.CompletedTo.Format(consts.DEFAULT_DATE_FORMAT))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/filterPanel.templ`, Line: 33, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/filterPanel.templ`, Line: 33, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {

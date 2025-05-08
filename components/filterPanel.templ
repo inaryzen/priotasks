@@ -30,7 +30,7 @@ templ FilterPanel(st models.Settings, allTags []models.TaskTag) {
 						type="date"
 						id={ consts.FILTER_COMPLETED_TO }
 						name={ consts.FILTER_COMPLETED_TO }
-						value={ st.TasksQuery.CompletedFrom.Format(consts.DEFAULT_DATE_FORMAT) }
+						value={ st.TasksQuery.CompletedTo.Format(consts.DEFAULT_DATE_FORMAT) }
 						hx-trigger="change"
 						hx-post={ "/filter/" + consts.FILTER_COMPLETED_TO }
 						hx-target="body"
