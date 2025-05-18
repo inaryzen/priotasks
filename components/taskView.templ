@@ -4,7 +4,7 @@ import (
 	"github.com/inaryzen/priotasks/models"
 )
 
-templ TasksView(cards []models.Task, st models.Settings, allTags []models.TaskTag) {
+templ TasksView(cards []models.Task, st models.Settings, allTags []models.TaskTag, totalTime string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -16,6 +16,6 @@ templ TasksView(cards []models.Task, st models.Settings, allTags []models.TaskTa
 			<script src="/assets/js/main.js"></script>
 			<link rel="stylesheet" href="/assets/css/main.css"/>
 		</head>
-		@TasksViewBody(cards, st, allTags)
+		@TasksViewBody(cards, st, allTags, totalTime)
 	</html>
 }

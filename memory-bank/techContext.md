@@ -27,6 +27,7 @@
 ### Testing
 - Run tests with `go test ./...`
 - Tests are organized by package with naming convention `Test_FunctionName_Scenario`
+- Table-driven tests are used for testing functions with multiple scenarios
 
 ### Version Management
 - Use `./bump-version.sh` to increment the application version

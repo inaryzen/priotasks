@@ -41,19 +41,6 @@ func DeleteTasksId(w http.ResponseWriter, r *http.Request) {
 	drawTaskTable(w, r)
 }
 
-// func PostTaskToggleCompleted(w http.ResponseWriter, r *http.Request) {
-// 	card, err := resolveTaskOrNotFound(w, r)
-// 	if err != nil {
-// 		return
-// 	}
-// 	err = services.FlipTask(card)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		log.Println(err)
-// 	}
-// 	w.WriteHeader(http.StatusOK)
-// }
-
 func GetViewEmptyTask(w http.ResponseWriter, r *http.Request) {
 	allTags, err := services.Tags()
 	if err != nil {
@@ -91,7 +78,6 @@ func GetViewTaskByIdHandler(w http.ResponseWriter, r *http.Request) {
 	cardsView.Render(r.Context(), w)
 }
 
-// TODO: Optimize. Instead of reloading the whole table, update only a single row
 func PutTaskHandler(w http.ResponseWriter, r *http.Request) {
 	task, tags := resolveTaskFromForm(r)
 	err := services.UpdateTask(task, tags)
@@ -219,8 +205,13 @@ func drawTaskViewBody(w http.ResponseWriter, r *http.Request) {
 	tags, err := services.Tags()
 	if err != nil {
 		internalServerError(w, err)
+		return
 	}
-	body := components.TasksViewBody(cards, settings, tags)
+
+	// Calculate total time
+	totalTimeFormatted := models.FormatTotalTime(models.CalculateTotalTime(cards))
+
+	body := components.TasksViewBody(cards, settings, tags, totalTimeFormatted)
 	body.Render(r.Context(), w)
 }
 
@@ -236,8 +227,13 @@ func drawTaskView(w http.ResponseWriter, r *http.Request) {
 	tags, err := services.Tags()
 	if err != nil {
 		internalServerError(w, err)
+		return
 	}
-	cardsView := components.TasksView(tasks, settings, tags)
+
+	// Calculate total time
+	totalTimeFormatted := models.FormatTotalTime(models.CalculateTotalTime(tasks))
+
+	cardsView := components.TasksView(tasks, settings, tags, totalTimeFormatted)
 	cardsView.Render(r.Context(), w)
 }
 

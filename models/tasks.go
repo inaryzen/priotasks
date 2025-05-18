@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -331,4 +332,34 @@ func (t Task) IsEmpty() bool {
 		!t.Planned &&
 		len(t.Tags) == 0 &&
 		t.Completed == NOT_COMPLETED
+}
+
+// CalculateTotalTime calculates the total time in minutes for a slice of tasks
+func CalculateTotalTime(tasks []Task) int {
+	costToMinutes := map[TaskCost]int{
+		CostXS:  10,
+		CostS:   30,
+		CostM:   60,
+		CostL:   120,
+		CostXL:  240,
+		CostXXL: 480,
+	}
+
+	totalMinutes := 0
+	for _, task := range tasks {
+		totalMinutes += costToMinutes[task.Cost]
+	}
+
+	return totalMinutes
+}
+
+// FormatTotalTime formats minutes as hours and minutes
+func FormatTotalTime(minutes int) string {
+	hours := minutes / 60
+	remainingMinutes := minutes % 60
+
+	if hours > 0 {
+		return fmt.Sprintf("%dh %dm", hours, remainingMinutes)
+	}
+	return fmt.Sprintf("%dm", remainingMinutes)
 }

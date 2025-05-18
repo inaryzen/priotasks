@@ -6,7 +6,7 @@ import (
 	"github.com/inaryzen/priotasks/models"
 )
 
-templ FilterPanel(st models.Settings, allTags []models.TaskTag) {
+templ FilterPanel(st models.Settings, allTags []models.TaskTag, totalTime string) {
 	<div class="filter-panel">
 		<fieldset>
 			<legend>Completed</legend>
@@ -167,6 +167,12 @@ templ FilterPanel(st models.Settings, allTags []models.TaskTag) {
 						<option value={ string(tag) }>{ string(tag) }</option>
 					}
 				</select>
+			</div>
+		</fieldset>
+		<fieldset style="margin-left: auto;">
+			<legend>Time</legend>
+			<div>
+				<span>Total: { totalTime }</span>
 			</div>
 		</fieldset>
 	</div>

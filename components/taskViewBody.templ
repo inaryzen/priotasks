@@ -5,7 +5,7 @@ import (
 	"github.com/inaryzen/priotasks/models"
 )
 
-templ TasksViewBody(cards []models.Task, st models.Settings, allTags []models.TaskTag) {
+templ TasksViewBody(cards []models.Task, st models.Settings, allTags []models.TaskTag, totalTime string) {
 	<body>
 		<div class="container">
 			<header>
@@ -33,7 +33,7 @@ templ TasksViewBody(cards []models.Task, st models.Settings, allTags []models.Ta
 					</ul>
 				</nav>
 			</header>
-			@FilterPanel(st, allTags)
+			@FilterPanel(st, allTags, totalTime)
 			@TaskTable(cards, st)
 		</div>
 		<div id="modal-card"></div>

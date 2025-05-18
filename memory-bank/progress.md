@@ -9,6 +9,7 @@
 - ✅ Setting tasks as work-in-progress or planned
 - ✅ Deleting tasks
 - ✅ Automatic task value calculation based on multiple factors
+- ✅ Task time calculation and formatting functions
 
 ### Task Organization
 - ✅ Tagging tasks for organization
@@ -29,10 +30,11 @@
 - ✅ Server-side rendering with Templ
 - ✅ Dynamic UI updates with HTMX
 
+The complete list of the implemented features could be found in `./docs/feature_description`
+
 ## What's Left to Build
 
 ### Planned Features
-- ⏳ Calculate and display total task time
 - ⏳ Tag selection improvements
 - ⏳ Task search functionality
 - ⏳ Backup management (rotation of backup files)

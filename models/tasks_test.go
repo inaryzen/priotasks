@@ -5,6 +5,103 @@ import (
 	"time"
 )
 
+func Test_CalculateTotalTime(t *testing.T) {
+	tests := []struct {
+		name  string
+		tasks []Task
+		want  int
+	}{
+		{
+			name:  "empty tasks",
+			tasks: []Task{},
+			want:  0,
+		},
+		{
+			name: "single task",
+			tasks: []Task{
+				{Cost: CostM}, // 1h = 60 minutes
+			},
+			want: 60,
+		},
+		{
+			name: "multiple tasks with different costs",
+			tasks: []Task{
+				{Cost: CostXS},  // 10 minutes
+				{Cost: CostS},   // 30 minutes
+				{Cost: CostM},   // 60 minutes
+				{Cost: CostL},   // 120 minutes
+				{Cost: CostXL},  // 240 minutes
+				{Cost: CostXXL}, // 480 minutes
+			},
+			want: 10 + 30 + 60 + 120 + 240 + 480, // 940 minutes
+		},
+		{
+			name: "multiple tasks with same cost",
+			tasks: []Task{
+				{Cost: CostM}, // 60 minutes
+				{Cost: CostM}, // 60 minutes
+				{Cost: CostM}, // 60 minutes
+			},
+			want: 180, // 3 hours = 180 minutes
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CalculateTotalTime(tt.tasks); got != tt.want {
+				t.Errorf("CalculateTotalTime() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_FormatTotalTime(t *testing.T) {
+	tests := []struct {
+		name    string
+		minutes int
+		want    string
+	}{
+		{
+			name:    "zero minutes",
+			minutes: 0,
+			want:    "0m",
+		},
+		{
+			name:    "minutes only",
+			minutes: 45,
+			want:    "45m",
+		},
+		{
+			name:    "one hour exactly",
+			minutes: 60,
+			want:    "1h 0m",
+		},
+		{
+			name:    "hours and minutes",
+			minutes: 125,
+			want:    "2h 5m",
+		},
+		{
+			name:    "multiple hours",
+			minutes: 180,
+			want:    "3h 0m",
+		},
+		{
+			name:    "large number of hours",
+			minutes: 600,
+			want:    "10h 0m",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FormatTotalTime(tt.minutes); got != tt.want {
+				t.Errorf("FormatTotalTime() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_titleFromContent(t *testing.T) {
 	tests := []struct {
 		name    string

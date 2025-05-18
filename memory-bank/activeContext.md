@@ -12,6 +12,7 @@ Recent changes to the project include:
    - Added the ability to reduce priority for all visible tasks
    - Implemented tag filtering and management
    - Added task value calculation based on multiple factors
+   - Implemented functions to calculate and format total task time
 
 2. **UI Improvements**:
    - Enhanced the task table with sortable headers
@@ -24,9 +25,4 @@ Recent changes to the project include:
    - Enhanced the database layer with better error handling
 
 ## Next Steps
-
-The following are the current priorities for development:
-
-1. **Calculate and display total task time**:
-   - Sum and display the total time of tasks listed in the table based on the Cost field
-   - Provide visual indication of total workload
+TBD
