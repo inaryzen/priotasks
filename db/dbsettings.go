@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to, filter_wip, filter_non_wip, planned, non_planned, tags"
+	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to, filter_wip, filter_non_wip, planned, non_planned, tags, search_text"
 )
 
 func (d *DbSQLite) initSettings() {
@@ -45,12 +45,25 @@ func (d *DbSQLite) initSettings() {
 	d.addSettingsFilterWipAndNonWip()
 	d.addSettingsPlannedAndNonPlanned()
 	d.settingsTableAddTagsColumn()
+	d.settingsTableAddSearchTextColumn()
 }
 
 func (d *DbSQLite) settingsTableAddTagsColumn() {
 	id := "settings_table_add_tags_column"
 	if !d.MigrationExists(id) {
 		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN tags TEXT DEFAULT ''")
+		if err != nil {
+			panic(err)
+		} else {
+			d.RecordMigration(id)
+		}
+	}
+}
+
+func (d *DbSQLite) settingsTableAddSearchTextColumn() {
+	id := "settings_table_add_search_text_column"
+	if !d.MigrationExists(id) {
+		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN search_text TEXT DEFAULT ''")
 		if err != nil {
 			panic(err)
 		} else {
@@ -129,6 +142,7 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 		&settings.TasksQuery.Planned,
 		&settings.TasksQuery.NonPlanned,
 		&tagsText,
+		&settings.TasksQuery.SearchText,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -163,7 +177,7 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 func (d *DbSQLite) SaveSettings(s models.Settings) error {
 	sqlQuery :=
 		"INSERT INTO settings (" + SETTINGS_COLUMNS + ") " +
-			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             filter_completed=excluded.filter_completed,
             filter_incompleted=excluded.filter_incompleted,
@@ -175,7 +189,8 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
             filter_non_wip=excluded.filter_non_wip,
             planned=excluded.planned,
             non_planned=excluded.non_planned,
-			tags=excluded.tags
+			tags=excluded.tags,
+			search_text=excluded.search_text
     `
 	completedFrom := time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
 	if !s.TasksQuery.CompletedFrom.IsZero() {
@@ -205,6 +220,7 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 		s.TasksQuery.Planned,
 		s.TasksQuery.NonPlanned,
 		tagsText,
+		s.TasksQuery.SearchText,
 	}
 
 	_, err = d.instance.Exec(sqlQuery, args...)

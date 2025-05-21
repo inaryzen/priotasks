@@ -9,6 +9,20 @@ import (
 templ FilterPanel(st models.Settings, allTags []models.TaskTag, totalTime string) {
 	<div class="filter-panel">
 		<fieldset>
+			<legend>Search</legend>
+			<input
+				autofocus
+				type="search"
+				name={ consts.FILTER_SEARCH }
+				placeholder="Search tasks..."
+				hx-post={ "/filter/" + consts.FILTER_SEARCH }
+				hx-trigger="keyup changed delay:600ms"
+				hx-target="body"
+				hx-swap="innerHTML"
+				value={ st.TasksQuery.SearchText }
+			/>
+		</fieldset>
+		<fieldset>
 			<legend>Completed</legend>
 			<div>
 				<label for="completed-from">

@@ -10,6 +10,7 @@ const (
 	FILTER_PLANNED               = "filter-planned"
 	FILTER_NON_PLANNED           = "filter-non-planned"
 	FILTER_TAGS                  = "filter-tags"
+	FILTER_SEARCH                = "filter-search"
 
 	PREPARED_QUERY_RESET                    = "prepared-query-clear"
 	PREPARED_QUERY_COMPLETED_YESTERDAY      = "prepared-query-completed-yesterday"

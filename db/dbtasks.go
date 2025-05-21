@@ -315,6 +315,12 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 		sqlQuery += "))"
 	}
 
+	if query.SearchText != "" {
+		sqlQuery += " AND (title LIKE ? OR content LIKE ?)"
+		searchPattern := "%" + query.SearchText + "%"
+		args = append(args, searchPattern, searchPattern)
+	}
+
 	if query.SortColumn != models.ColumnUndefined {
 		sqlQuery += " ORDER BY "
 		switch query.SortColumn {

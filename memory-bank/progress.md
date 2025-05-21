@@ -30,7 +30,7 @@
 - ✅ Server-side rendering with Templ
 - ✅ Dynamic UI updates with HTMX
 
-The complete list of the implemented features could be found in `./docs/feature_description`
+The complete list of the implemented features could be found in `./docs/feature_description`. Consult the files from this directory whenever you need to learn about the details of implemented features. 
 
 ## What's Left to Build
 

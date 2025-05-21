@@ -94,6 +94,9 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		t.Tags = append(t.Tags, models.TaskTag(tagStr))
+	case consts.FILTER_SEARCH:
+		searchText := r.Form.Get(consts.FILTER_SEARCH)
+		t.SearchText = searchText
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("unknown filter name")

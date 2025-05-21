@@ -86,6 +86,7 @@ type TasksQuery struct {
 	Planned           bool
 	NonPlanned        bool
 	Tags              []TaskTag
+	SearchText        string
 }
 
 func (t TasksQuery) RemoveTag(target TaskTag) TasksQuery {
@@ -112,7 +113,8 @@ func (t TasksQuery) String() string {
 			"FilterNonWip: %v, "+
 			"Planned: %v, "+
 			"NonPlanned: %v, "+
-			"Tags: %v",
+			"Tags: %v, "+
+			"SearchText: %v",
 		t.FilterCompleted,
 		t.CompletedFrom,
 		t.CompletedTo,
@@ -124,6 +126,7 @@ func (t TasksQuery) String() string {
 		t.Planned,
 		t.NonPlanned,
 		t.Tags,
+		t.SearchText,
 	)
 }
 
@@ -139,5 +142,6 @@ func (s TasksQuery) Reset() TasksQuery {
 	s.Planned = false
 	s.NonPlanned = false
 	s.Tags = []TaskTag{}
+	s.SearchText = ""
 	return s
 }

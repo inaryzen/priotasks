@@ -157,6 +157,17 @@ table #column-completed-status {
     /* Changed from flex-end to flex-start */
 }
 
+.filter-panel input[type="search"] {
+    font-family: "Consolas", "Courier New", Courier, "Lucida Console", monospace;
+    color: #e0e0e0;
+    padding: 10px;
+    border: 1px solid #404040;
+    border-radius: 5px;
+    font-size: 1em;
+    background-color: #333;
+    width: 300px;
+}
+
 .filter-panel label {
     display: flex;
     align-items: center;

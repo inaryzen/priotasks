@@ -42,6 +42,11 @@ flowchart TD
 - Views implemented as Templ components
 - Clear separation between data and presentation
 
+## Key concepts and models
+- `models/tasks.go` - The primary entity of the project, contain `Task` struct
+- `models/settings.go` - Supporting logic, primary user settings. Contains all the preferences and the table filtration settings.
+- Every entity such as `Task` or `Settings` are persisted in the database. Whenever you change or introduce new fields to these structs you must also update their SQL tables accordingly. Typically you can find their table definitions in their `db` file, for instance `go/dbtasks.go` or `go/dbsettings.go` respectively. Remember to always introduce migration for the DB changes. See `initSettings()` and `settingsTableAddTagsColumn()` for examples. 
+
 ## Critical Implementation Paths
 
 ### Task Creation Flow
