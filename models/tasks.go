@@ -76,6 +76,21 @@ func (p TaskPriority) Reduce() TaskPriority {
 	}
 }
 
+func (p TaskPriority) MarshalYAML() (any, error) {
+	switch p {
+	case PriorityUrgent:
+		return "Urgent", nil
+	case PriorityHigh:
+		return "High", nil
+	case PriorityMedium:
+		return "Medium", nil
+	case PriorityLow:
+		return "Low", nil
+	default:
+		return "Unknown", nil
+	}
+}
+
 type TaskImpact int
 
 const (
@@ -109,6 +124,23 @@ func (i TaskImpact) ToHumanString() string {
 		return "-"
 	default:
 		return "Unknown"
+	}
+}
+
+func (i TaskImpact) MarshalYAML() (any, error) {
+	switch i {
+	case ImpactHigh:
+		return "High", nil
+	case ImpactConsiderable:
+		return "Considerable", nil
+	case ImpactModerate:
+		return "Moderate", nil
+	case ImpactLow:
+		return "Low", nil
+	case ImpactSlight:
+		return "Slight", nil
+	default:
+		return "Unknown", nil
 	}
 }
 
@@ -151,6 +183,25 @@ func (i TaskCost) ToHumanString() string {
 	}
 }
 
+func (c TaskCost) MarshalYAML() (any, error) {
+	switch c {
+	case CostXS:
+		return "XS (~10m)", nil
+	case CostS:
+		return "S (~30m)", nil
+	case CostM:
+		return "M (~1h)", nil
+	case CostL:
+		return "L (~2h)", nil
+	case CostXL:
+		return "XL (~4h)", nil
+	case CostXXL:
+		return "XXL (~8h)", nil
+	default:
+		return "Unknown", nil
+	}
+}
+
 type TaskFun int
 
 const (
@@ -187,6 +238,21 @@ func (f TaskFun) GetMultiplier() float32 {
 		return 1.5
 	default:
 		return 1.0
+	}
+}
+
+func (f TaskFun) MarshalYAML() (any, error) {
+	switch f {
+	case FunS:
+		return "S", nil
+	case FunM:
+		return "M", nil
+	case FunL:
+		return "L", nil
+	case FunXL:
+		return "XL", nil
+	default:
+		return "Unknown", nil
 	}
 }
 

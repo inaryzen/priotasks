@@ -28,6 +28,7 @@ templ TasksViewBody(cards []models.Task, st models.Settings, allTags []models.Ta
 							<a href="#">Operations</a>
 							<div class="dropdown-content">
 								<a hx-post="/tasks/reduce-priority" hx-target="body">Reduce Priority</a>
+								<a href="/tasks/export/yaml">Export YAML</a>
 							</div>
 						</li>
 					</ul>

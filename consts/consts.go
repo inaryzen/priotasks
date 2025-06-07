@@ -27,6 +27,7 @@ const (
 	URL_TOGGLE_SORT_TABLE = "/toggle-sort-table"
 	URL_TASKS             = "/tasks"
 	URL_TASKS_ID          = "/tasks/{id}"
+	URL_TASKS_EXPORT_YAML = "/tasks/export/yaml"
 
 	DEFAULT_TIME_FORMAT = "2006-01-02 15:04:05"
 	DEFAULT_DATE_FORMAT = "2006-01-02"

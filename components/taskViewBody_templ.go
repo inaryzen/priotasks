@@ -112,7 +112,7 @@ func TasksViewBody(cards []models.Task, st models.Settings, allTags []models.Tas
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" hx-target=\"body\">Reset Filters</a></div></li><li class=\"nav-bar-dropdown\"><a href=\"#\">Operations</a><div class=\"dropdown-content\"><a hx-post=\"/tasks/reduce-priority\" hx-target=\"body\">Reduce Priority</a></div></li></ul></nav></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" hx-target=\"body\">Reset Filters</a></div></li><li class=\"nav-bar-dropdown\"><a href=\"#\">Operations</a><div class=\"dropdown-content\"><a hx-post=\"/tasks/reduce-priority\" hx-target=\"body\">Reduce Priority</a> <a href=\"/tasks/export/yaml\">Export YAML</a></div></li></ul></nav></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
