@@ -14,7 +14,6 @@ import (
 
 	"github.com/inaryzen/priotasks/common"
 	"github.com/inaryzen/priotasks/consts"
-	"github.com/inaryzen/priotasks/csv"
 	"github.com/inaryzen/priotasks/db"
 	"github.com/inaryzen/priotasks/handlers"
 	"github.com/inaryzen/priotasks/services"
@@ -34,32 +33,16 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
+	// run backup before opening DB file
+	if !backup() {
+		return
+	}
+
 	newDb := db.NewDbSQLite()
 	db.SetDB(newDb)
 	db.DB().Init("")
 
 	defer db.DB().Close()
-
-	if common.Conf.DumpOnStartup {
-		if common.IsDebug() {
-			log.Println("dump db on startup...")
-		}
-		err := csv.Dump()
-		if err != nil {
-			log.Printf("failed to dump db: %v", err)
-			return
-		}
-	}
-
-	if common.Conf.LoadDumpOnStartup != "" {
-		csv.Load(common.Conf.LoadDumpOnStartup)
-	}
-
-	if common.Conf.AutomaticDump {
-		log.Println("auto-dump enabled...")
-		s := csv.NewDumpScheduler(2400) // 40min
-		defer s.Release()
-	}
 
 	services.Init()
 	configureServerMux()
@@ -76,6 +59,24 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
+}
+
+func backup() bool {
+	appDir, err := common.ResolveAppDir()
+	if err != nil {
+		log.Printf("failed to resolve app directory: %v", err)
+		return false
+	}
+	backupService, err := services.NewBackupService(appDir)
+	if err != nil {
+		log.Printf("failed to initialize backup service: %v", err)
+		return false
+	}
+	if err := backupService.CreateBackup(); err != nil {
+		log.Printf("failed to create backup: %v", err)
+		return false
+	}
+	return true
 }
 
 func printVersion() {

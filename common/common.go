@@ -9,11 +9,8 @@ import (
 )
 
 type Config struct {
-	Debug             bool
-	ServerPort        int
-	DumpOnStartup     bool
-	AutomaticDump     bool
-	LoadDumpOnStartup string
+	Debug      bool
+	ServerPort int
 }
 
 var Conf Config
@@ -22,16 +19,10 @@ func InitConfig() {
 	Debug("InitConfig...")
 	var debug = flag.Bool("d", false, "enable debug")
 	var serverPort = flag.Int("p", 12345, "server port")
-	var dumpOnStartup = flag.Bool("dump", true, "dump on startup")
-	var autoDump = flag.Bool("auto-dump", true, "enable automatic dump")
-	var loadDump = flag.String("load-dump", "", "load a specified dump on startup")
 	flag.Parse()
 	Conf = Config{
-		Debug:             *debug,
-		ServerPort:        *serverPort,
-		DumpOnStartup:     *dumpOnStartup,
-		AutomaticDump:     *autoDump,
-		LoadDumpOnStartup: *loadDump,
+		Debug:      *debug,
+		ServerPort: *serverPort,
 	}
 	Debug("InitConfig completed...")
 }
