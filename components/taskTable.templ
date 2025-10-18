@@ -2,8 +2,18 @@ package components
 
 import (
 	"fmt"
+	"strings"
 	"github.com/inaryzen/priotasks/models"
 )
+
+// ai: Helper function to join tags for tooltip display
+func joinTags(tags []models.TaskTag) string {
+	var tagStrings []string
+	for _, tag := range tags {
+		tagStrings = append(tagStrings, string(tag))
+	}
+	return strings.Join(tagStrings, ", ")
+}
 
 templ TaskTable(cards []models.Task, st models.Settings) {
 	<table id="cards-table">
@@ -54,10 +64,15 @@ templ TaskTable(cards []models.Task, st models.Settings) {
 							disabled
 						/>
 					</td>
-					<td id="column-tags" class="column-tags">
-						for _, tag := range c.Tags {
-							<span class="tag-pill">{ string(tag) }</span>
-						}
+					<td id="column-tags" class="column-tags" title={ joinTags(c.Tags) }>
+						<div class="tags-display">
+							for i, tag := range c.Tags {
+								if i > 0 {
+									<span class="tag-separator" />
+								}
+								<span class="tag-pill">{ string(tag) }</span>
+							}
+						</div>
 					</td>
 					<td id="column-title" class="column-title"><a href="#" hx-get={ string(templ.URL(fmt.Sprintf("/view/task/%s", c.Id))) } hx-target="#modal-card" hx-swap="outerHTML">{ c.Title }</a></td>
 					<td id="column-impact">{ c.Cost.ToHumanString() }</td>

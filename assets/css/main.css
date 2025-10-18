@@ -483,6 +483,60 @@ th.sortable-header:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    position: relative;
+}
+
+/* ai: New styles for improved tag display */
+.tags-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+}
+
+.column-tags .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #404040;
+    color: #e0e0e0;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.8rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.tag-separator {
+    color: #888;
+    margin: 0 0.2rem;
+    font-size: 0.8rem;
+}
+
+/* ai: Enhanced tooltip styling for tags column */
+.column-tags[title]:hover {
+    cursor: help;
+}
+
+/* ai: Custom tooltip styling (for browsers that support it) */
+.column-tags[title]::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2a2a2a;
+    color: #e0e0e0;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    border: 1px solid #555;
+}
+
+.column-tags[title]:hover::after {
+    opacity: 1;
 }
 
 /* Additional dark mode specific styles */
