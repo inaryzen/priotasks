@@ -183,6 +183,41 @@ templ FilterPanel(st models.Settings, allTags []models.TaskTag, totalTime string
 				</select>
 			</div>
 		</fieldset>
+		<fieldset>
+			<legend>Limit</legend>
+			<div>
+				<label>
+					<input
+						if st.TasksQuery.EnableLimit {
+							checked
+						}
+						type="checkbox"
+						id={ consts.FILTER_LIMIT_ENABLE }
+						name={ consts.FILTER_LIMIT_ENABLE }
+						hx-trigger="change"
+						hx-post={ "/filter/" + consts.FILTER_LIMIT_ENABLE }
+						hx-target="body"
+						hx-swap="innerHTML"
+					/>
+					Limit tasks
+				</label>
+				<label for="limit-count">
+					Count:
+					<input
+						type="number"
+						id={ consts.FILTER_LIMIT_COUNT }
+						name={ consts.FILTER_LIMIT_COUNT }
+						value={ fmt.Sprintf("%d", st.TasksQuery.LimitCount) }
+						min="1"
+						max="1000"
+						hx-trigger="change"
+						hx-post={ "/filter/" + consts.FILTER_LIMIT_COUNT }
+						hx-target="body"
+						hx-swap="innerHTML"
+					/>
+				</label>
+			</div>
+		</fieldset>
 		<fieldset style="margin-left: auto;">
 			<legend>Time</legend>
 			<div>

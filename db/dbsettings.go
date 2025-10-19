@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to, filter_wip, filter_non_wip, planned, non_planned, tags, search_text"
+	SETTINGS_COLUMNS = "id, filter_completed, filter_incompleted, active_sort_column, active_sort_direction, completed_from, completed_to, filter_wip, filter_non_wip, planned, non_planned, tags, search_text, enable_limit, limit_count"
 )
 
 func (d *DbSQLite) initSettings() {
@@ -46,6 +46,7 @@ func (d *DbSQLite) initSettings() {
 	d.addSettingsPlannedAndNonPlanned()
 	d.settingsTableAddTagsColumn()
 	d.settingsTableAddSearchTextColumn()
+	d.settingsTableAddLimitColumns()
 }
 
 func (d *DbSQLite) settingsTableAddTagsColumn() {
@@ -68,6 +69,28 @@ func (d *DbSQLite) settingsTableAddSearchTextColumn() {
 			panic(err)
 		} else {
 			d.RecordMigration(id)
+		}
+	}
+}
+
+func (d *DbSQLite) settingsTableAddLimitColumns() {
+	enableLimitId := "settings_table_add_enable_limit_column"
+	if !d.MigrationExists(enableLimitId) {
+		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN enable_limit BOOLEAN DEFAULT 1")
+		if err != nil {
+			panic(err)
+		} else {
+			d.RecordMigration(enableLimitId)
+		}
+	}
+
+	limitCountId := "settings_table_add_limit_count_column"
+	if !d.MigrationExists(limitCountId) {
+		_, err := d.instance.Exec("ALTER TABLE settings ADD COLUMN limit_count INTEGER DEFAULT 10")
+		if err != nil {
+			panic(err)
+		} else {
+			d.RecordMigration(limitCountId)
 		}
 	}
 }
@@ -143,6 +166,8 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 		&settings.TasksQuery.NonPlanned,
 		&tagsText,
 		&settings.TasksQuery.SearchText,
+		&settings.TasksQuery.EnableLimit,
+		&settings.TasksQuery.LimitCount,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -177,7 +202,7 @@ func (d *DbSQLite) FindSettings(settingsId string) (models.Settings, error) {
 func (d *DbSQLite) SaveSettings(s models.Settings) error {
 	sqlQuery :=
 		"INSERT INTO settings (" + SETTINGS_COLUMNS + ") " +
-			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             filter_completed=excluded.filter_completed,
             filter_incompleted=excluded.filter_incompleted,
@@ -190,7 +215,9 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
             planned=excluded.planned,
             non_planned=excluded.non_planned,
 			tags=excluded.tags,
-			search_text=excluded.search_text
+			search_text=excluded.search_text,
+			enable_limit=excluded.enable_limit,
+			limit_count=excluded.limit_count
     `
 	completedFrom := time.Time{}.Format(consts.DEFAULT_DATE_FORMAT)
 	if !s.TasksQuery.CompletedFrom.IsZero() {
@@ -221,6 +248,8 @@ func (d *DbSQLite) SaveSettings(s models.Settings) error {
 		s.TasksQuery.NonPlanned,
 		tagsText,
 		s.TasksQuery.SearchText,
+		s.TasksQuery.EnableLimit,
+		s.TasksQuery.LimitCount,
 	}
 
 	_, err = d.instance.Exec(sqlQuery, args...)

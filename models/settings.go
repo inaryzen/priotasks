@@ -87,6 +87,8 @@ type TasksQuery struct {
 	NonPlanned        bool
 	Tags              []TaskTag
 	SearchText        string
+	EnableLimit       bool
+	LimitCount        int
 }
 
 func (t TasksQuery) RemoveTag(target TaskTag) TasksQuery {
@@ -114,7 +116,9 @@ func (t TasksQuery) String() string {
 			"Planned: %v, "+
 			"NonPlanned: %v, "+
 			"Tags: %v, "+
-			"SearchText: %v",
+			"SearchText: %v, "+
+			"EnableLimit: %v, "+
+			"LimitCount: %v",
 		t.FilterCompleted,
 		t.CompletedFrom,
 		t.CompletedTo,
@@ -127,6 +131,8 @@ func (t TasksQuery) String() string {
 		t.NonPlanned,
 		t.Tags,
 		t.SearchText,
+		t.EnableLimit,
+		t.LimitCount,
 	)
 }
 
@@ -143,5 +149,7 @@ func (s TasksQuery) Reset() TasksQuery {
 	s.NonPlanned = false
 	s.Tags = []TaskTag{}
 	s.SearchText = ""
+	s.EnableLimit = true
+	s.LimitCount = 10
 	return s
 }

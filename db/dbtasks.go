@@ -353,6 +353,12 @@ func (d *DbSQLite) FindTasks(query models.TasksQuery) ([]models.Task, error) {
 		}
 	}
 
+	// ai: Add LIMIT clause if enabled
+	if query.EnableLimit && query.LimitCount > 0 {
+		sqlQuery += " LIMIT ?"
+		args = append(args, query.LimitCount)
+	}
+
 	common.Debug("FindTasks: sqlQuery: %v", sqlQuery)
 	common.Debug("FindTasks: args: %v", args)
 

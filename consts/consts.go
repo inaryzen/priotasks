@@ -11,6 +11,8 @@ const (
 	FILTER_NON_PLANNED           = "filter-non-planned"
 	FILTER_TAGS                  = "filter-tags"
 	FILTER_SEARCH                = "filter-search"
+	FILTER_LIMIT_ENABLE          = "filter-limit-enable"
+	FILTER_LIMIT_COUNT           = "filter-limit-count"
 
 	PREPARED_QUERY_RESET                    = "prepared-query-clear"
 	PREPARED_QUERY_COMPLETED_YESTERDAY      = "prepared-query-completed-yesterday"

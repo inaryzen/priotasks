@@ -26,6 +26,8 @@ func TestSaveAndFindSettings_Success(t *testing.T) {
 			Planned:           true,
 			NonPlanned:        false,
 			Tags:              []models.TaskTag{"tag1", "tag2"},
+			EnableLimit:       true,
+			LimitCount:        25,
 		},
 	}
 
@@ -61,6 +63,14 @@ func TestSaveAndFindSettings_Success(t *testing.T) {
 		t.Errorf("expected %d tags, got %d",
 			len(settings.TasksQuery.Tags), len(found.TasksQuery.Tags))
 	}
+	if found.TasksQuery.EnableLimit != settings.TasksQuery.EnableLimit {
+		t.Errorf("expected EnableLimit %v, got %v",
+			settings.TasksQuery.EnableLimit, found.TasksQuery.EnableLimit)
+	}
+	if found.TasksQuery.LimitCount != settings.TasksQuery.LimitCount {
+		t.Errorf("expected LimitCount %v, got %v",
+			settings.TasksQuery.LimitCount, found.TasksQuery.LimitCount)
+	}
 }
 
 func TestFindSettings_NonExistent(t *testing.T) {
@@ -82,6 +92,8 @@ func TestSaveSettings_Update(t *testing.T) {
 			FilterCompleted: true,
 			SortColumn:      models.Priority,
 			Tags:            []models.TaskTag{"tag1"},
+			EnableLimit:     true,
+			LimitCount:      15,
 		},
 	}
 
@@ -94,6 +106,8 @@ func TestSaveSettings_Update(t *testing.T) {
 	// Modify settings
 	settings.TasksQuery.FilterCompleted = false
 	settings.TasksQuery.Tags = []models.TaskTag{"tag1", "tag2"}
+	settings.TasksQuery.EnableLimit = false
+	settings.TasksQuery.LimitCount = 50
 
 	// Update settings
 	err = db.SaveSettings(settings)
@@ -112,6 +126,12 @@ func TestSaveSettings_Update(t *testing.T) {
 	}
 	if len(found.TasksQuery.Tags) != 2 {
 		t.Errorf("expected 2 tags after update, got %d", len(found.TasksQuery.Tags))
+	}
+	if found.TasksQuery.EnableLimit != false {
+		t.Error("EnableLimit was not updated")
+	}
+	if found.TasksQuery.LimitCount != 50 {
+		t.Errorf("expected LimitCount 50 after update, got %d", found.TasksQuery.LimitCount)
 	}
 }
 

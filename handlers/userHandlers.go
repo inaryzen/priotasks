@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/inaryzen/priotasks/common"
@@ -97,6 +99,20 @@ func PostFilterName(w http.ResponseWriter, r *http.Request) {
 	case consts.FILTER_SEARCH:
 		searchText := r.Form.Get(consts.FILTER_SEARCH)
 		t.SearchText = searchText
+	case consts.FILTER_LIMIT_ENABLE:
+		filter := r.Form.Get(consts.FILTER_LIMIT_ENABLE)
+		value := filter != ""
+		t.EnableLimit = value
+	case consts.FILTER_LIMIT_COUNT:
+		limitCountStr := r.Form.Get(consts.FILTER_LIMIT_COUNT)
+		if limitCountStr != "" {
+			limitCount, err := strconv.Atoi(limitCountStr)
+			if err != nil || limitCount < 1 {
+				postFilterNameError(w, filterName, fmt.Errorf("invalid limit count: %s", limitCountStr))
+				return
+			}
+			t.LimitCount = limitCount
+		}
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("unknown filter name")
