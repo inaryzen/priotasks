@@ -99,6 +99,7 @@ func configureServerMux() {
 	http.HandleFunc("PUT "+consts.URL_TASKS, handlers.PutTaskHandler)
 	// http.HandleFunc("POST /tasks/{id}/toggle-completed", handlers.PostTaskToggleCompleted)
 	http.HandleFunc("DELETE "+consts.URL_TASKS_ID, handlers.DeleteTasksId)
+	http.HandleFunc("POST /tasks/{id}/clone", handlers.PostTaskCloneHandler)
 	http.HandleFunc("GET "+consts.URL_TASKS_EXPORT_YAML, handlers.GetTasksYamlHandler)
 	http.HandleFunc("POST /filter/{name}", handlers.PostFilterName)
 	http.HandleFunc("DELETE /filter/tag/{name}", handlers.DeleteTagName)

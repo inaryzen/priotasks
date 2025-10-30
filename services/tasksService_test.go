@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"slices"
@@ -438,5 +439,413 @@ func TestReducePriorityForVisibleTasks(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// ai: Happy Path Tests for CloneTask
+func Test_CloneTask_Success(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:       "original-id",
+		Title:    "Original Task",
+		Content:  "Original content",
+		Priority: models.PriorityHigh,
+		Impact:   models.ImpactModerate,
+		Cost:     models.CostM,
+		Fun:      models.FunM,
+		Wip:      true,
+		Planned:  false,
+	}
+	mockDB.SaveTask(originalTask)
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if clonedTask.Id == originalTask.Id {
+		t.Error("Cloned task should have different ID")
+	}
+	if clonedTask.Title != "Copy of Original Task" {
+		t.Errorf("Expected title 'Copy of Original Task', got '%s'", clonedTask.Title)
+	}
+	if clonedTask.Content != originalTask.Content {
+		t.Error("Content should be copied")
+	}
+	if clonedTask.Priority != originalTask.Priority {
+		t.Error("Priority should be copied")
+	}
+	if clonedTask.Impact != originalTask.Impact {
+		t.Error("Impact should be copied")
+	}
+	if clonedTask.Cost != originalTask.Cost {
+		t.Error("Cost should be copied")
+	}
+	if clonedTask.Fun != originalTask.Fun {
+		t.Error("Fun should be copied")
+	}
+	if clonedTask.Wip != originalTask.Wip {
+		t.Error("Wip should be copied")
+	}
+	if clonedTask.Planned != originalTask.Planned {
+		t.Error("Planned should be copied")
+	}
+}
+
+func Test_CloneTask_WithTags(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:    "original-id",
+		Title: "Task with tags",
+	}
+	mockDB.SaveTask(originalTask)
+
+	// ai: Add tags to original task
+	tags := []models.TaskTag{"urgent", "work", "project"}
+	for _, tag := range tags {
+		mockDB.SaveTag(string(tag))
+		mockDB.AddTagToTask("original-id", string(tag))
+	}
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if len(clonedTask.Tags) != len(tags) {
+		t.Errorf("Expected %d tags, got %d", len(tags), len(clonedTask.Tags))
+	}
+
+	for _, expectedTag := range tags {
+		found := false
+		for _, actualTag := range clonedTask.Tags {
+			if actualTag == expectedTag {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected tag '%s' not found in cloned task", expectedTag)
+		}
+	}
+}
+
+func Test_CloneTask_WithoutTags(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:    "original-id",
+		Title: "Task without tags",
+	}
+	mockDB.SaveTask(originalTask)
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if len(clonedTask.Tags) != 0 {
+		t.Errorf("Expected 0 tags, got %d", len(clonedTask.Tags))
+	}
+}
+
+func Test_CloneTask_CompletedTask(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:        "original-id",
+		Title:     "Completed Task",
+		Completed: models.NOT_COMPLETED.Add(24 * 60 * 60 * 1000000000), // 1 day ago
+	}
+	mockDB.SaveTask(originalTask)
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if clonedTask.Completed != models.NOT_COMPLETED {
+		t.Error("Cloned task should have completion status reset")
+	}
+}
+
+// ai: Property Validation Tests for CloneTask
+func Test_CloneTask_TitlePrefix(t *testing.T) {
+	mockDB := setupTestDB()
+
+	testCases := []struct {
+		name          string
+		originalTitle string
+		expectedTitle string
+	}{
+		{"Simple title", "My Task", "Copy of My Task"},
+		{"Empty title", "", "Copy of "},
+		{"Title with spaces", "  Task with spaces  ", "Copy of   Task with spaces  "},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			taskId := "task-" + tc.name
+			originalTask := models.Task{
+				Id:    taskId,
+				Title: tc.originalTitle,
+			}
+			mockDB.SaveTask(originalTask)
+
+			clonedTask, err := CloneTask(taskId)
+			if err != nil {
+				t.Fatalf("CloneTask failed: %v", err)
+			}
+
+			if clonedTask.Title != tc.expectedTitle {
+				t.Errorf("Expected title '%s', got '%s'", tc.expectedTitle, clonedTask.Title)
+			}
+		})
+	}
+}
+
+func Test_CloneTask_NewIdGenerated(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:    "original-id",
+		Title: "Test Task",
+	}
+	mockDB.SaveTask(originalTask)
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if clonedTask.Id == originalTask.Id {
+		t.Error("Cloned task should have different ID than original")
+	}
+	if clonedTask.Id == "" {
+		t.Error("Cloned task should have non-empty ID")
+	}
+}
+
+func Test_CloneTask_NewTimestamps(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:      "original-id",
+		Title:   "Test Task",
+		Created: models.NOT_COMPLETED.Add(-24 * 60 * 60 * 1000000000), // 1 day ago
+		Updated: models.NOT_COMPLETED.Add(-12 * 60 * 60 * 1000000000), // 12 hours ago
+	}
+	mockDB.SaveTask(originalTask)
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if clonedTask.Created.Equal(originalTask.Created) {
+		t.Error("Cloned task should have different Created timestamp")
+	}
+	// ai: Note: AsNewTask() only sets Created timestamp, not Updated
+}
+
+func Test_CloneTask_CompletionReset(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:        "original-id",
+		Title:     "Completed Task",
+		Completed: models.NOT_COMPLETED.Add(24 * 60 * 60 * 1000000000), // 1 day ago
+	}
+	mockDB.SaveTask(originalTask)
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if clonedTask.Completed != models.NOT_COMPLETED {
+		t.Errorf("Expected completion to be reset to NOT_COMPLETED, got %v", clonedTask.Completed)
+	}
+}
+
+func Test_CloneTask_OtherPropertiesCopied(t *testing.T) {
+	mockDB := setupTestDB()
+
+	originalTask := models.Task{
+		Id:       "original-id",
+		Title:    "Test Task",
+		Content:  "Test content with details",
+		Priority: models.PriorityUrgent,
+		Impact:   models.ImpactHigh,
+		Cost:     models.CostXL,
+		Fun:      models.FunL,
+		Wip:      true,
+		Planned:  true,
+	}
+	mockDB.SaveTask(originalTask)
+
+	clonedTask, err := CloneTask("original-id")
+	if err != nil {
+		t.Fatalf("CloneTask failed: %v", err)
+	}
+
+	if clonedTask.Content != originalTask.Content {
+		t.Errorf("Expected content '%s', got '%s'", originalTask.Content, clonedTask.Content)
+	}
+	if clonedTask.Priority != originalTask.Priority {
+		t.Errorf("Expected priority %v, got %v", originalTask.Priority, clonedTask.Priority)
+	}
+	if clonedTask.Impact != originalTask.Impact {
+		t.Errorf("Expected impact %v, got %v", originalTask.Impact, clonedTask.Impact)
+	}
+	if clonedTask.Cost != originalTask.Cost {
+		t.Errorf("Expected cost %v, got %v", originalTask.Cost, clonedTask.Cost)
+	}
+	if clonedTask.Fun != originalTask.Fun {
+		t.Errorf("Expected fun %v, got %v", originalTask.Fun, clonedTask.Fun)
+	}
+	if clonedTask.Wip != originalTask.Wip {
+		t.Errorf("Expected wip %v, got %v", originalTask.Wip, clonedTask.Wip)
+	}
+	if clonedTask.Planned != originalTask.Planned {
+		t.Errorf("Expected planned %v, got %v", originalTask.Planned, clonedTask.Planned)
+	}
+}
+
+// ai: Error Handling Tests for CloneTask
+func Test_CloneTask_TaskNotFound(t *testing.T) {
+	setupTestDB()
+
+	_, err := CloneTask("non-existent-id")
+	if err == nil {
+		t.Error("Expected error when cloning non-existent task")
+	}
+	if err != nil && !strings.Contains(err.Error(), "failed to find original task") {
+		t.Errorf("Expected 'failed to find original task' error, got: %v", err)
+	}
+}
+
+// ai: Mock for error testing
+type errorMockDB struct {
+	MockDB
+	findTaskError error
+	taskTagsError error
+	saveTaskError error
+	addTagError   error
+}
+
+func (m *errorMockDB) FindTask(taskId string) (models.Task, error) {
+	if m.findTaskError != nil {
+		return models.Task{}, m.findTaskError
+	}
+	return m.MockDB.FindTask(taskId)
+}
+
+func (m *errorMockDB) TaskTags(taskId string) ([]models.TaskTag, error) {
+	if m.taskTagsError != nil {
+		return nil, m.taskTagsError
+	}
+	return m.MockDB.TaskTags(taskId)
+}
+
+func (m *errorMockDB) SaveTask(task models.Task) error {
+	if m.saveTaskError != nil {
+		return m.saveTaskError
+	}
+	return m.MockDB.SaveTask(task)
+}
+
+func (m *errorMockDB) AddTagToTask(taskId, tagId string) error {
+	if m.addTagError != nil {
+		return m.addTagError
+	}
+	return m.MockDB.AddTagToTask(taskId, tagId)
+}
+
+func Test_CloneTask_DatabaseError(t *testing.T) {
+	mockDB := &errorMockDB{
+		MockDB: MockDB{
+			tasks: map[string]models.Task{
+				"test-id": {Id: "test-id", Title: "Test"},
+			},
+		},
+		taskTagsError: fmt.Errorf("database connection error"),
+	}
+	db.SetDB(mockDB)
+
+	_, err := CloneTask("test-id")
+	if err == nil {
+		t.Error("Expected error when database operation fails")
+	}
+	if err != nil && !strings.Contains(err.Error(), "failed to get original task tags") {
+		t.Errorf("Expected 'failed to get original task tags' error, got: %v", err)
+	}
+}
+
+func Test_CloneTask_SaveTaskFails(t *testing.T) {
+	mockDB := &errorMockDB{
+		MockDB: MockDB{
+			tasks: map[string]models.Task{
+				"test-id": {Id: "test-id", Title: "Test"},
+			},
+			taskTags: map[string][]models.TaskTag{
+				"test-id": {},
+			},
+		},
+		saveTaskError: fmt.Errorf("save operation failed"),
+	}
+	db.SetDB(mockDB)
+
+	_, err := CloneTask("test-id")
+	if err == nil {
+		t.Error("Expected error when SaveTask fails")
+	}
+	if err != nil && !strings.Contains(err.Error(), "failed to save cloned task") {
+		t.Errorf("Expected 'failed to save cloned task' error, got: %v", err)
+	}
+}
+
+func Test_CloneTask_AddTagFails(t *testing.T) {
+	mockDB := &errorMockDB{
+		MockDB: MockDB{
+			tasks: map[string]models.Task{
+				"test-id": {Id: "test-id", Title: "Test"},
+			},
+			taskTags: map[string][]models.TaskTag{
+				"test-id": {"tag1", "tag2"},
+			},
+		},
+		addTagError: fmt.Errorf("add tag operation failed"),
+	}
+	db.SetDB(mockDB)
+
+	_, err := CloneTask("test-id")
+	if err == nil {
+		t.Error("Expected error when AddTagToTask fails")
+	}
+	if err != nil && !strings.Contains(err.Error(), "failed to add tag to cloned task") {
+		t.Errorf("Expected 'failed to add tag to cloned task' error, got: %v", err)
+	}
+}
+
+func Test_CloneTask_GetTagsFails(t *testing.T) {
+	mockDB := &errorMockDB{
+		MockDB: MockDB{
+			tasks: map[string]models.Task{
+				"test-id": {Id: "test-id", Title: "Test"},
+			},
+		},
+		taskTagsError: fmt.Errorf("get tags operation failed"),
+	}
+	db.SetDB(mockDB)
+
+	_, err := CloneTask("test-id")
+	if err == nil {
+		t.Error("Expected error when TaskTags fails")
+	}
+	if err != nil && !strings.Contains(err.Error(), "failed to get original task tags") {
+		t.Errorf("Expected 'failed to get original task tags' error, got: %v", err)
 	}
 }

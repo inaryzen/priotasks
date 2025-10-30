@@ -200,6 +200,15 @@ templ TaskModal(card models.Task, taskTags map[models.TaskTag]bool, allTags []mo
 						if !card.IsEmpty() {
 							<button
 								type="button"
+								class="btn-clone"
+								hx-post={ fmt.Sprintf("/tasks/%s/clone", card.Id) }
+								hx-target="#modal-card"
+								hx-swap="outerHTML"
+							>
+								Clone
+							</button>
+							<button
+								type="button"
 								class="btn-delete"
 								hx-delete={ fmt.Sprintf("/tasks/%s", card.Id) }
 								hx-target="#cards-table"

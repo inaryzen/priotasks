@@ -41,6 +41,40 @@ func DeleteTasksId(w http.ResponseWriter, r *http.Request) {
 	drawTaskTable(w, r)
 }
 
+func PostTaskCloneHandler(w http.ResponseWriter, r *http.Request) {
+	pfx := "PostTaskCloneHandler:"
+	log.Printf("%s Starting task cloning", pfx)
+
+	task, err := resolveTaskOrNotFound(w, r)
+	if err != nil {
+		return
+	}
+
+	clonedTask, err := services.CloneTask(task.Id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("%s failed to clone task: %v", pfx, err)
+		return
+	}
+
+	allTags, err := services.Tags()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("%s failed to get all tags: %v", pfx, err)
+		return
+	}
+
+	// ai: Create task tags map from the cloned task's tags
+	taskTagsMap := make(map[models.TaskTag]bool)
+	for _, tag := range clonedTask.Tags {
+		taskTagsMap[tag] = true
+	}
+
+	// ai: Render the edit modal for the cloned task
+	cardsView := components.TaskModal(clonedTask, taskTagsMap, allTags)
+	cardsView.Render(r.Context(), w)
+}
+
 func GetViewEmptyTask(w http.ResponseWriter, r *http.Request) {
 	allTags, err := services.Tags()
 	if err != nil {

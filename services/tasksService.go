@@ -166,3 +166,45 @@ func ReducePriorityForVisibleTasks(query models.TasksQuery) error {
 	}
 	return nil
 }
+
+func CloneTask(taskId string) (models.Task, error) {
+	pfx := "CloneTask:"
+	log.Printf("%s cloning task with ID: %s", pfx, taskId)
+
+	// ai: Get the original task
+	originalTask, err := db.DB().FindTask(taskId)
+	if err != nil {
+		return models.Task{}, fmt.Errorf("%s failed to find original task: %w", pfx, err)
+	}
+
+	// ai: Get the original task's tags
+	originalTags, err := db.DB().TaskTags(taskId)
+	if err != nil {
+		return models.Task{}, fmt.Errorf("%s failed to get original task tags: %w", pfx, err)
+	}
+
+	// ai: Create cloned task with modified properties
+	clonedTask := originalTask
+	clonedTask.Title = "Copy of " + originalTask.Title
+	clonedTask.Completed = models.NOT_COMPLETED // Reset completion status
+
+	// ai: Save the cloned task (AsNewTask will generate new ID and timestamps)
+	clonedTask = clonedTask.AsNewTask()
+	err = SaveTask(clonedTask)
+	if err != nil {
+		return models.Task{}, fmt.Errorf("%s failed to save cloned task: %w", pfx, err)
+	}
+
+	// ai: Add tags to the cloned task
+	for _, tag := range originalTags {
+		err := AddTagToTask(clonedTask.Id, tag)
+		if err != nil {
+			return models.Task{}, fmt.Errorf("%s failed to add tag to cloned task: %w", pfx, err)
+		}
+	}
+
+	// ai: Set the tags on the returned task object
+	clonedTask.Tags = originalTags
+
+	return clonedTask, nil
+}
